@@ -1,0 +1,274 @@
+
+.resizehandle {
+    background-color: var(--chakra-colors-gray-900);
+    min-height: 16px;
+    min-width: 16px;
+}
+
+.scrollY {
+    overflow-y: scroll;
+    height: 100%;
+}
+
+.react-flow__attribution {
+    background-color: var(--chakra-colors-gray-900);
+}
+
+.hist-entry {
+    white-space: nowrap;
+}
+.hist-lbl {
+
+    color: var(--chakra-colors-gray-600);
+}
+
+
+
+.sbar {
+    --sb-track-color: var(--chakra-colors-gray-700);
+    --sb-thumb-color: var(--chakra-colors-blue-500);
+    --sb-size: 10px;
+
+    scrollbar-color: var(--sb-thumb-color) var(--sb-track-color);
+}
+
+.sbar::-webkit-scrollbar {
+    width: var(--sb-size)
+}
+
+.sbar::-webkit-scrollbar-track {
+    background: var(--sb-track-color);
+    border-radius: 10px;
+}
+
+.sbar::-webkit-scrollbar-thumb {
+    background: var(--sb-thumb-color);
+    border-radius: 10px;
+
+}
+
+.token-symbol {
+    font-size:30px;
+    line-height:32px;
+}
+
+.vecv {
+    .v-lbl {
+        color: var(--chakra-colors-gray-600);
+    }
+}
+
+.veclbl {
+    color: var(--chakra-colors-gray-600);
+}
+
+.tsymbol {
+    color: var(--chakra-colors-teal-600)
+}
+
+hr {
+    border-top: 4px solid var(--chakra-colors-gray-900)!important;
+    
+}
+
+.panelsgrd {
+    border-top: 4px solid var(--chakra-colors-gray-900)!important;
+}
+
+.active {cursor:pointer; color: var(--chakra-colors-blue-500); }
+.active:hover {color: var(--chakra-colors-blue-300); }
+
+.react-flow__handle-left {
+    left:-15px;
+    width:20px;
+    height:20px;
+    opacity:0.2;
+}
+
+
+.react-flow__handle-right {
+    right:-15px;
+    width:20px;
+    height:20px;opacity:0.2;
+}
+
+.arrow-right {
+    position:absolute;
+    top:66px;
+    width: 0; 
+    height: 0; 
+    border-top: 15px solid transparent; /* size of the top border */
+    border-bottom: 15px solid transparent; /* size of the bottom border */
+    border-left: 20px solid var(--chakra-colors-green-700); /* size and color of the left border */
+  }
+  
+
+  .diagonal-lines {
+    background-color: #e5e5f7;
+    opacity: 0.8;
+    background-size: 10px 10px;
+    background-image: repeating-linear-gradient(135deg, var(--chakra-colors-gray-900) 0, var(--chakra-colors-gray-900) 1px, var(--chakra-colors-gray-800) 0, var(--chakra-colors-gray-800) 50%); 
+
+  }
+  
+
+  .muted {
+    color: var(--chakra-colors-gray-600)
+  }
+
+  .amount {
+    padding:4px 4px;border-radius:4px;margin:-4px -4px;
+
+    font-family: 'Consolas', 'Monaco', 'Lucida Console', 'Courier New', Courier, monospace; 
+
+  }
+
+  @keyframes hl-up {
+    0% { background-color: var(--chakra-colors-green-400) }
+    100% {  background-color:var(--chakra-colors-gray-800) }
+  }
+  
+  .hl-up {
+    animation: hl-up 4s;
+  }
+
+  @keyframes hl-down {
+    0% { background-color: var(--chakra-colors-red-400) }
+    100% {  background-color: var(--chakra-colors-gray-800) }
+  }
+  
+  .hl-down {
+    animation: hl-down 4s;
+  }
+
+  
+
+  @keyframes hl-up-muted {
+    0% { background-color:   var(--chakra-colors-gray-600) }
+    100% {  background-color: var(--chakra-colors-gray-800)}
+  }
+  
+  .hl-up-muted {
+    animation: hl-up-muted 1s;
+  }
+
+  @keyframes hl-down-muted {
+    0% { background-color: var(--chakra-colors-gray-600) }
+    100% {  background-color: var(--chakra-colors-gray-800)}
+  }
+  
+  .hl-down-muted {
+    animation: hl-down-muted 1s;
+  }
+
+  
+  .hl-history {
+    border-left:5px solid var(--chakra-colors-green-600);
+    
+  }
+
+  .logotitle {
+    line-height:26px;
+    font-size: 12px;
+    color:var(--chakra-colors-gray-500);
+    font-family: 'Consolas', 'Monaco', 'Lucida Console', 'Courier New', Courier, monospace; 
+
+  }
+
+  .paneltitle {
+    line-height:22px;
+    font-size: 12px;
+    color:var(--chakra-colors-gray-500);
+    border-bottom: 2px solid var(--chakra-colors-gray-900);
+    font-family: 'Consolas', 'Monaco', 'Lucida Console', 'Courier New', Courier, monospace;
+    
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+ /* --- GLITCH EFFECT CSS */
+  .introsubtitle {font-family: 'Consolas', 'Monaco', 'Lucida Console', 'Courier New', Courier, monospace;}
+  .stack {
+    display: grid;
+    grid-template-columns: 1fr;
+    font-family: 'Consolas', 'Monaco', 'Lucida Console', 'Courier New', Courier, monospace;
+  }
+  .stacklogo  span {
+    font-size:25vh;
+    letter-spacing:-80px;text-align:center;
+  }
+  .stack span {
+    font-weight: bold;
+    grid-row-start: 1;
+    grid-column-start: 1;
+
+    --stack-height: calc(100% / var(--stacks) - 1px);
+    --inverse-index: calc(calc(var(--stacks) - 1) - var(--index));
+    --clip-top: calc(var(--stack-height) * var(--index));
+    --clip-bottom: calc(var(--stack-height) * var(--inverse-index));
+    clip-path: inset(var(--clip-top) 0 var(--clip-bottom) 0);
+    animation: stack 340ms cubic-bezier(.46,.29,0,1.24) 1 backwards calc(var(--index) * 120ms), glitch 2s ease infinite 2s alternate-reverse;
+  }
+  
+  .stack span:nth-child(odd) { --glitch-translate: 8px; }
+  .stack span:nth-child(even) { --glitch-translate: -8px; }
+  
+  @keyframes stack {
+    0% {
+      opacity: 0;
+      transform: translateX(-50%);
+      text-shadow: -2px 3px 0 red, 2px -3px 0 blue;
+    };
+    60% {
+      opacity: 0.5;
+      transform: translateX(50%);
+    }
+    80% {
+      transform: none;
+      opacity: 1;
+      text-shadow: 2px -3px 0 red, -2px 3px 0 blue;
+    }
+    100% {
+      text-shadow: none;
+    }
+  }
+  
+  @keyframes glitch {
+    0% {
+      text-shadow: -2px 3px 0 red, 2px -3px 0 blue;
+      transform: translate(var(--glitch-translate));
+    }
+    2% {
+      text-shadow: 2px -3px 0 red, -2px 3px 0 blue;
+    }
+    4%, 100% {  text-shadow: none; transform: none; }
+  }
+
+
+  .deffect {    font-smooth: never;
+    user-select: none;
+
+
+    -webkit-font-smoothing : none;
+    font-family: 'Consolas', 'Monaco', 'Lucida Console', 'Courier New', Courier, monospace;
+  }
+   /* --- END GLITCH EFFECT CSS */
+
+
+   .diagonal-lines2 {
+    background-color: var(--chakra-colors-gray-900);
+    opacity: 0.8;
+    background-size: 10px 10px;
+    background-image: repeating-linear-gradient(135deg, var(--chakra-colors-gray-800) 0, var(--chakra-colors-gray-800) 1px, var(--chakra-colors-gray-900) 0, var(--chakra-colors-gray-900) 50%); 
+
+  }
+  
