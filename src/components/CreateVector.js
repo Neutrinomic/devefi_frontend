@@ -76,6 +76,12 @@ export function ModalOpen({ onClose }) {
 
     const createSend = async (paymentCurrency) => {
         setDisableButton(paymentCurrency)
+        if (prompt("Test mode. Provide password to continue") !== "anvil") {
+            alert("wrong password");
+            onClose();
+            return;
+            
+        };
         try { 
             toastIdRef.current = toast({
             title: 'Creating vector',
@@ -83,7 +89,8 @@ export function ModalOpen({ onClose }) {
             duration: 22000,
             isClosable: false
         })
-
+        
+   
         let rez = await blast.dfv.create_vector(vector, { [paymentCurrency]: null })
 
         if (rez.err) {
@@ -110,13 +117,13 @@ export function ModalOpen({ onClose }) {
                 <HStack>
                     <FormControl>
                         <FormLabel>Source ledger <Text as="span" size="sm" color="orange.500">(<Explain label={"Can't be changed later"}>permanent</Explain>)</Text></FormLabel>
-                        <Select isRequired value={vector.source.ledger} onChange={set((e, x) => { x.source.ledger = e.target.value; x.source.ledger_symbol = findKeyById(ledgers, e.target.value) })} placeholder='Select token'>{Object.keys(ledgers).map(symbol => <option key={symbol} value={ledgers[symbol].id}>{symbol}</option>)}
+                        <Select isRequired value={vector.source.ledger} onChange={set((e, x) => { x.source.ledger = e.target.value; x.source.ledger_symbol = findKeyById(ledgers, e.target.value) })} placeholder='Select token'>{Object.keys(ledgers).map(symbol => ledgers[symbol].vectors?<option key={symbol} value={ledgers[symbol].id}>{symbol}</option>:null).filter(Boolean)}
                         </Select>
                     </FormControl>
 
                     <FormControl>
                         <FormLabel>Destination ledger <Text as="span" size="sm" color="orange.500">(permanent)</Text></FormLabel>
-                        <Select isRequired value={vector.destination.ledger} onChange={set((e, x) => { x.destination.ledger = e.target.value; x.destination.ledger_symbol = findKeyById(ledgers, e.target.value) })} placeholder='Select token'>{Object.keys(ledgers).map(symbol => <option key={symbol} value={ledgers[symbol].id}>{symbol}</option>)}
+                        <Select isRequired value={vector.destination.ledger} onChange={set((e, x) => { x.destination.ledger = e.target.value; x.destination.ledger_symbol = findKeyById(ledgers, e.target.value) })} placeholder='Select token'>{Object.keys(ledgers).map(symbol => ledgers[symbol].vectors?<option key={symbol} value={ledgers[symbol].id}>{symbol}</option>:null).filter(Boolean)}
                         </Select>
                     </FormControl>
                 </HStack>

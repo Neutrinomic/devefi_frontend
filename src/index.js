@@ -19,7 +19,7 @@ root.render(
       <Provider store={store}>
 
       <HashRouter>
-    <ColorModeScript />
+      <ColorModeScript initialColorMode={theme.config.initialColorMode} />
     <App />
     </HashRouter>
     </Provider>
