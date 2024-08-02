@@ -111,7 +111,6 @@ hr {
 
   }
   
-
   .muted {
     color: var(--chakra-colors-gray-600)
   }
@@ -141,7 +140,6 @@ hr {
     animation: hl-down 4s;
   }
 
-  
 
   @keyframes hl-up-muted {
     0% { background-color:   var(--chakra-colors-gray-600) }
@@ -185,16 +183,6 @@ hr {
   }
 
 
-
-
-
-
-
-
-
-
-
-
  /* --- GLITCH EFFECT CSS */
   .introsubtitle {font-family: 'Consolas', 'Monaco', 'Lucida Console', 'Courier New', Courier, monospace;}
   .stack {
@@ -203,8 +191,9 @@ hr {
     font-family: 'Consolas', 'Monaco', 'Lucida Console', 'Courier New', Courier, monospace;
   }
   .stacklogo  span {
-    font-size:25vh;
-    letter-spacing:-80px;text-align:center;
+    font-size: 240px;
+    letter-spacing: -40px;
+    text-align: center;
   }
   .stack span {
     font-weight: bold;

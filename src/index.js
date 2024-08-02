@@ -13,13 +13,13 @@ import "./reducers/timers";
 const container = document.getElementById('root');
 const root = ReactDOM.createRoot(container);
 
+window.localStorage.setItem("chakra-ui-color-mode", "dark");
 root.render(
   <StrictMode>
     <ChakraBaseProvider theme={theme}>
-      <Provider store={store}>
-
-      <HashRouter>
-      <ColorModeScript initialColorMode={theme.config.initialColorMode} />
+    <Provider store={store}>
+    <HashRouter>
+    <ColorModeScript initialColorMode={theme.config.initialColorMode} />
     <App />
     </HashRouter>
     </Provider>

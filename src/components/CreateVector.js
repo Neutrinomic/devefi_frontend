@@ -10,21 +10,24 @@ import {
     Input, Button, useDisclosure, Select, HStack, Checkbox, Stack, Alert, AlertIcon, IconButton, useToast
 } from '@chakra-ui/react'
 import React, { useState, useEffect } from 'react'
-import { ledgers } from "../ledgers_cfg"
 import { InputAccount } from "./Transfer"
 import { AddIcon, ArrowForwardIcon, CheckIcon } from "@chakra-ui/icons"
 import { Algo_v1 } from "./algo/Algo_v1"
 import { useBlast } from "../icblast"
 import { produce } from "immer"
+import { approveTokens } from "../reducers/account"
+import {useDispatch} from "react-redux"
 
 export function ModalOpen({ onClose }) {
 
     const blast = useBlast()
-    const [agree, setAgree] = React.useState(false)
+    const dispatch = useDispatch();
+    const [agree, setAgree] = React.useState(true)
     const toast = useToast();
     const toastIdRef = React.useRef()
     const [disableButton, setDisableButton] = React.useState(false)
-
+    const ledgers = blast.meta.ledgers;
+    const pools = blast.meta.pools;
     const [vector, setVector] = useState({
         owner: blast.me,
         source: {
@@ -38,7 +41,7 @@ export function ModalOpen({ onClose }) {
         },
         algo: {
             v1: {
-                max: 0.0004,
+                max: 0,
                 multiplier: 1.01,
                 multiplier_wiggle: 0.005,
                 multiplier_wiggle_seconds: 60,
@@ -59,10 +62,11 @@ export function ModalOpen({ onClose }) {
     if (!vector.destination.ledger) { valid = { ok: false, error: 'Destination token must be selected' } };
 
     const [prices, setPrices] = useState(null)
+    const [aggrPrices, setAggrPrices] = useState(null)
 
     useEffect(() => {
         const load = async () => {
-            let p = await blast.dfv.get_vector_price();
+            let p = await blast.pools[ Object.keys(blast.pools)[0] ].get_vector_price();
             setPrices(p.ok);
         };
     
@@ -74,39 +78,77 @@ export function ModalOpen({ onClose }) {
         return () => clearInterval(intervalId);
     }, []);
 
+    useEffect(() => {
+        const load = async () => {
+            let p = await blast.prices.get_latest_extended();
+            let rez = {};
+            for (let le in ledgers) {
+                try {
+                rez[le] = p.find(y => Number(y.id) == ledgers[le].priceid).rates.find(x => x.to_token == 0).rate
+                } catch (e) {
+                    rez[le] = 1;
+                }
+            }
+            
+            if (vector.algo.v1.max == 0) setVector(produce(vector, (x) => { x.algo.v1.max = (rez[vector.destination.ledger_symbol] / rez[vector.source.ledger_symbol])*1.2 }));
+
+            setAggrPrices(rez);
+        };
+    
+        // Call load immediately and then set up the interval
+        load();
+        const intervalId = setInterval(load, 10000); // 5000 milliseconds = 5 seconds
+    
+        // Cleanup function to clear the interval when the component unmounts
+        return () => clearInterval(intervalId);
+    }, [vector]);
+
+    let found_pool = blast.pools[`${vector.source.ledger_symbol}_${vector.destination.ledger_symbol}`] || blast.pools[`${vector.destination.ledger_symbol}_${vector.source.ledger_symbol}`];
+    let found_pool_id = blast.poolsId[`${vector.source.ledger_symbol}_${vector.destination.ledger_symbol}`] || blast.poolsId[`${vector.destination.ledger_symbol}_${vector.source.ledger_symbol}`];
+
+
     const createSend = async (paymentCurrency) => {
         setDisableButton(paymentCurrency)
-        if (prompt("Test mode. Provide password to continue") !== "anvil") {
+        if ( localStorage.getItem("anvil") == 'yes' && prompt("Test mode. Provide password to continue") !== "anvil") {
             alert("wrong password");
             onClose();
             return;
-            
         };
-        try { 
+        try {
             toastIdRef.current = toast({
-            title: 'Creating vector',
-            status: 'loading',
-            duration: 22000,
-            isClosable: false
-        })
-        
-   
-        let rez = await blast.dfv.create_vector(vector, { [paymentCurrency]: null })
-
-        if (rez.err) {
-            toast.update(toastIdRef.current, { status: 'error', title: "Error", description: rez.err, duration: 5000, isClosable: true })
-        } else {
-            toast.update(toastIdRef.current, { title: "Success", status: 'success', duration: 2000, isClosable: true })
-        }
-
-        }  catch (e) {
-            console.log(e)
+                title: 'Creating vector',
+                status: 'loading',
+                duration: 22000,
+                isClosable: false
+            })
             
+            // Find the pool id based on the source and destination ledgers
+            if (!found_pool) throw new Error("Pool not found");
+            try {
+                
+                // await dispatch(approveTokens({ symbol: paymentCurrency.toUpperCase(), amount:  Number((2n*10000n + prices[paymentCurrency])) / 10 ** 8,  spender:{owner: found_pool.$principal}}));
+            } catch (e) {
+                toast.update(toastIdRef.current, { status: 'error', title: "Error", description: JSON.stringify(e.message), duration: 5000, isClosable: true })
+            }
+            let rez = await found_pool.create_vector(vector, { [paymentCurrency]: null });
+
+            if (rez.err) {
+                toast.update(toastIdRef.current, { status: 'error', title: "Error", description: rez.err, duration: 5000, isClosable: true })
+            } else {
+                toast.update(toastIdRef.current, { status: 'success', title: "Success", duration: 2000, isClosable: true })
+            }
+
+        } catch (e) {
+            console.log(e);
+            toast.update(toastIdRef.current, { status: 'error', title: "Error", description: e.message, duration: 5000, isClosable: true })
         }
+
         setDisableButton(false)
         onClose();
     }
 
+ 
+    if (!found_pool) { valid = {ok:false, error:"No pool between source and destination"}};
 
     return <ModalContent >
         <ModalHeader>Create a single vector</ModalHeader>
@@ -117,13 +159,13 @@ export function ModalOpen({ onClose }) {
                 <HStack>
                     <FormControl>
                         <FormLabel>Source ledger <Text as="span" size="sm" color="orange.500">(<Explain label={"Can't be changed later"}>permanent</Explain>)</Text></FormLabel>
-                        <Select isRequired value={vector.source.ledger} onChange={set((e, x) => { x.source.ledger = e.target.value; x.source.ledger_symbol = findKeyById(ledgers, e.target.value) })} placeholder='Select token'>{Object.keys(ledgers).map(symbol => ledgers[symbol].vectors?<option key={symbol} value={ledgers[symbol].id}>{symbol}</option>:null).filter(Boolean)}
+                        <Select isRequired value={vector.source.ledger} onChange={set((e, x) => { x.source.ledger = e.target.value; x.algo.v1.max = 0; x.source.ledger_symbol = findKeyById(ledgers, e.target.value) })} placeholder='Select token'>{Object.keys(ledgers).map(symbol => ledgers[symbol].vectors?<option key={symbol} value={ledgers[symbol].id}>{symbol}</option>:null).filter(Boolean)}
                         </Select>
                     </FormControl>
 
                     <FormControl>
                         <FormLabel>Destination ledger <Text as="span" size="sm" color="orange.500">(permanent)</Text></FormLabel>
-                        <Select isRequired value={vector.destination.ledger} onChange={set((e, x) => { x.destination.ledger = e.target.value; x.destination.ledger_symbol = findKeyById(ledgers, e.target.value) })} placeholder='Select token'>{Object.keys(ledgers).map(symbol => ledgers[symbol].vectors?<option key={symbol} value={ledgers[symbol].id}>{symbol}</option>:null).filter(Boolean)}
+                        <Select isRequired value={vector.destination.ledger} onChange={set((e, x) => { x.destination.ledger = e.target.value; x.algo.v1.max = 0; x.destination.ledger_symbol = findKeyById(ledgers, e.target.value) })} placeholder='Select token'>{Object.keys(ledgers).map(symbol => ledgers[symbol].vectors?<option key={symbol} value={ledgers[symbol].id}>{symbol}</option>:null).filter(Boolean)}
                         </Select>
                     </FormControl>
                 </HStack>
@@ -157,7 +199,7 @@ export function ModalOpen({ onClose }) {
                 </HStack>
             </Stack>
 
-            <Box mt="20px"><Checkbox checked={agree} onChange={(e) => setAgree(e.target.checked)}>I agree to the TOS and that my vector will be <Explain label={"Removed from volume statistics"}>muted</Explain> or <Explain label={"Not allowed to trade"}>suspended</Explain> if it engages in market manipulation</Checkbox></Box>
+            {/* <Box mt="20px"><Checkbox checked={agree} onChange={(e) => setAgree(e.target.checked)}>I agree to the TOS and that my vector will be <Explain label={"Removed from volume statistics"}>muted</Explain> or <Explain label={"Not allowed to trade"}>suspended</Explain> if it engages in market manipulation</Checkbox></Box> */}
 
             {prices ? <Flex mt="20px" alignItems="center"><Box><Button onClick={onClose}>Cancel</Button></Box>
                 <Spacer />

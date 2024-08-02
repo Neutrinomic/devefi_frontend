@@ -4,18 +4,15 @@ import { useBlast, login, logout, refresh } from "../icblast";
 import { useEffect, useState } from 'react';
 import { AccountAddresses, Address } from "../components/Address"
 import { useAsyncInterval } from "../hooks/Interval";
-import { ledgers } from "../ledgers_cfg";
 import { numberFormat, Symbol, Amount } from './Amount';
 import { useSelector } from 'react-redux';
 import { MdInput, MdOutput } from "react-icons/md";
 import { IconButton } from '@chakra-ui/react';
 import { WithdrawAccount } from './Transfer';
-
+import {AdvancedGuideModal} from './Help';
 export function Nav() {
-
-
     return <Box p={2} className="logotitle">
-        NEUTRINITE DEVEFI
+        <Flex>NEUTRINITE DEVEFI <Spacer /><AdvancedGuideModal/></Flex>
     </Box>
 }
 

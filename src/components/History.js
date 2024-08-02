@@ -7,7 +7,7 @@ import { ArrowRightIcon, ArrowLeftIcon } from '@chakra-ui/icons'
 import { Time } from "./Time";
 import { numberFormat, Symbol, AmountFixed } from "./Amount";
 import { Address } from './Address';
-export function VectorHistory({ id, total, vec, vid }) {
+export function VectorHistory({ id, total, vec }) {
     const blast = useBlast();
     let fetch_max = 100;
     let keep_max = 100;
@@ -15,15 +15,22 @@ export function VectorHistory({ id, total, vec, vid }) {
 
     let [data, setData] = useState([]);
     let [last, setLast] = useState(total);
+    let [poolid, vid] = id.split(".");
+
+    vid = parseInt(vid, 10);
+    
+    let [source, destination] = poolid.split("_");
+    let pool = blast.pools[`${source}_${destination}`] || blast.pools[`${destination}_${source}`];
+    if (!pool) throw new Error("Pool not found");
 
     useEffect(() => {
         // Define a function that wraps the async call
         const fetchData = async () => {
             try {
                 let start = total > last ? Math.max(0, Math.max(last, total - fetch_max)) : Math.max(0, last - fetch_max);
-                let { ok } = await blast.dfv.get_vector_events({ id, start: Math.max(0, start), length:fetch_max });
+                let { ok } = await pool.get_vector_events({ id:vid, start: Math.max(0, start), length:fetch_max });
                 let entries = ok.entries;
-                if (!verbose) entries = ok.entries.filter(([id, d]) => (d.kind["swap"] || d.kind["source_in"] ||  d.kind["destination_in"]));
+                if (!verbose) entries = ok.entries.filter(([id, d]) => d?(d.kind["swap"] || d.kind["source_in"] ||  d.kind["withdraw"]):false).filter(Boolean);
                 let rez = toState(entries.reverse());
                 rez = rez.filter(x => data.findIndex(([id, d]) => id == x[0]) == -1);
                 // const result = await asyncFunction();
@@ -59,7 +66,7 @@ export function VectorHistory({ id, total, vec, vid }) {
 }
 
 function HistoryEntry({ id, d, vec, vid }) {
-
+    if (!d) return null;
     let kind = Object.keys(d.kind)[0];
     let now = Math.floor(Date.now() / 1000);
     let highlight = (d.timestamp > now - 60*2)?"hl-history":"";
@@ -117,9 +124,9 @@ function HistoryKind({ kind, x, vec, vid }) {
         case "swap":
 
             return <>
-                <Val label="amount"><AmountFixed val={(x.amount / 10 ** vec.source.ledger_decimals)}/> <Symbol>{vec.source.ledger_symbol}</Symbol></Val>                        
+                <Val label="amountIn"><AmountFixed val={(x.amountIn / 10 ** vec.destination.ledger_decimals)}/> <Symbol>{vec.destination.ledger_symbol}</Symbol></Val>                        
+                <Val label="amountOut"><AmountFixed val={(x.amountOut / 10 ** vec.source.ledger_decimals)}/> <Symbol>{vec.source.ledger_symbol}</Symbol></Val>                        
                 <Val label="fee"><AmountFixed val={(x.fee / 10 ** vec.source.ledger_decimals)}/> <Symbol>{vec.source.ledger_symbol}</Symbol></Val>
-                <Val label="rate"><AmountFixed val={(x.rate)}/> <Symbol>{vec.source.ledger_symbol}</Symbol></Val>
                 <Val label="from">{x.from}</Val>
                 <Val label="to">{x.to}</Val>
             </>

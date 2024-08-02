@@ -8,28 +8,25 @@ import { Symbol, Amount, AmountFixed } from './Amount';
 
 export function ArchitectVectors({ vecs, architect_id, current_vid }) {
 
-
     return <Box h="100%" className="scrollY sbar diagonal-lines" >
-
-
         <Total vecs={vecs} />
         <Stack spacing="1" divider={<hr />} >
-            {vecs && vecs.entries.map(([id, info]) => <VectorOverview architect_id={architect_id} key={id} id={id} info={info} active={current_vid == id} />
-            )}
+            {vecs && Object.entries(vecs).map(([id, info]) => <VectorOverview architect_id={architect_id} key={id} id={id} info={info} active={current_vid == id} />)}
         </Stack>
-
     </Box>
-
 }
 
+
 function Total({ vecs }) {
-    if (vecs.entries.length == 0) return null;
-    let in_sources = vecs.entries.reduce((acc, [id, info]) => {  
+    if (Object.entries(vecs).length == 0) return null;
+    
+    let in_sources = Object.entries(vecs).reduce((acc, [id, info]) => {
         let t = (acc[info.source.ledger_symbol]?.t ? acc[info.source.ledger_symbol].t : 0) + info.source_balance_available / 10 ** info.source.ledger_decimals;
         let u = t * info.source_rate_usd;
         return { ...acc, [info.source.ledger_symbol]: {t, u} }
     }, {});
-    let in_destination = vecs.entries.reduce((acc, [id, info]) => {  
+
+    let in_destination = Object.entries(vecs).reduce((acc, [id, info]) => {
         let t = (acc[info.destination.ledger_symbol]?.t ? acc[info.destination.ledger_symbol].t : 0) + info.destination_balance_available / 10 ** info.destination.ledger_decimals;
         let u = t * info.destination_rate_usd;
         return { ...acc, [info.destination.ledger_symbol]: {t, u} }
@@ -54,3 +51,4 @@ function Total({ vecs }) {
         <hr/>
     </Box>
 }
+

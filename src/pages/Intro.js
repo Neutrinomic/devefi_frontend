@@ -25,7 +25,7 @@ export function Intro() {
         
         <Box mt="-150px" mb="150px" w="600px" ml="auto" mr="auto" textAlign="center" className="introsubtitle stack"  color="gray.700">
             <Marquee speed="100">
-        <span style={{"--index": 0}}>| ---&gt; DECENTRALIZED VECTOR FINANCE | VER 1.0.0 NEXUS | POWERED BY THE INTERNET COMPUTER | GOVERNED BY NEUTRINITE DAO | DEVELOPED BY ANVIL | 2024 |{" "}</span>
+        <span style={{"--index": 0}}>| ---&gt; DECENTRALIZED VECTOR FINANCE | VER 1.0.0 | POWERED BY THE INTERNET COMPUTER | GOVERNED BY NEUTRINITE DAO | DEVELOPED BY NEUTRINOMIC FOUNDATION | 2024 |{" "}</span>
             </Marquee>
         </Box>
         <Deffect fs={12}/>

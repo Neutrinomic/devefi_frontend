@@ -37,8 +37,6 @@ export function VectorOverview({ architect_id, id, info, active = false }) {
                 <Box className="veclbl">destination</Box>
                 <TokenSymbol symbol={info.destination.ledger_symbol} />
             </GridItem>
-
-
             <GridItem >
                 <Val label={"balance"}><Amount val={(Number(info.destination_balance_available) / 10 ** info.destination.ledger_decimals)} /> <Symbol>{info.destination.ledger_symbol}</Symbol></Val>
             </GridItem>
@@ -169,6 +167,7 @@ export function VectorHeader({ id, info }) {
 }
 
 function ModifyVector({ id, vector }) {
+
     const blast = useBlast();
     const [modVector, setModVector] = React.useState(vector);
     const [modChanged, setModChanged] = React.useState(false);
@@ -177,6 +176,12 @@ function ModifyVector({ id, vector }) {
     const toast = useToast();
     const toastIdRef = React.useRef()
     const [disableButton, setDisableButton] = React.useState(false)
+
+    let [poolid, vid] = id.split(".");
+    vid = parseInt(vid, 10);
+    let [source, destination] = poolid.split("_");
+    let pool = blast.pools[`${source}_${destination}`] || blast.pools[`${destination}_${source}`];
+    if (!pool) throw new Error("Pool not found");
 
     const set = (f) => (e) => {
         setModChanged(true);
@@ -206,7 +211,7 @@ function ModifyVector({ id, vector }) {
                 isClosable: false
             })
 
-            let rez = await blast.dfv.modify_vector({ id, algo: saveVector.algo, destination: dchange });
+            let rez = await pool.modify_vector({ id:vid, algo: saveVector.algo, destination: dchange });
             if (rez.err) {
                 toast.update(toastIdRef.current, { status: 'error', title: "Error", description: rez.err, duration: 5000, isClosable: true })
             } else {

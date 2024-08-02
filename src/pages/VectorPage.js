@@ -27,14 +27,20 @@ import { CreateVector } from "../components/CreateVector";
 export function VectorPage() {
 
     let blast = useBlast();
-    let { architect_id, vid: vidt } = useParams();
-    let vid = parseInt(vidt, 10);
-
+    let { architect_id, vid } = useParams();
 
     let vecs = useAsyncInterval(async () => {
-        let dvs = await blast.dfv.get_architect_vectors({ id: architect_id, start: 0, length: 20 });
+        let rez = {};
+        for (let pool in blast.pools) {
+            let can = blast.pools[pool];
+            let dvs = await can.get_architect_vectors({ id: architect_id, start: 0, length: 20 });
 
-        return toState(dvs);
+            for (let k in dvs.entries) {
+                rez[pool + "." + dvs.entries[k][0]] =  dvs.entries[k][1]
+            }
+            
+        }
+        return toState(rez);
     }, 5000, [architect_id]);
 
     // let vec = useAsyncInterval(async () => {
@@ -44,9 +50,9 @@ export function VectorPage() {
     //     return toState(rez);
     // }, 5000, [vid]);
 
-    let vecIdx = vecs ? vecs.entries.findIndex(v => v[0] == vid) : -1;
-    let vec = vecIdx !== -1 ? vecs.entries[vecIdx][1] : null;
     if (!vecs) return <Box>Loading...</Box>
+    let vec = vid? vecs[vid] : null;
+    
     return <Grid
         height="100vh"
         width="100vw"
@@ -56,9 +62,6 @@ export function VectorPage() {
     >
         <GridItem><Nav /></GridItem>
         <GridItem className="panelsgrd">
-
-
-
 
             <PanelGroup direction="horizontal" >
                 <Panel maxSize="15">
