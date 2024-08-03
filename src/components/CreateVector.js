@@ -126,7 +126,7 @@ export function ModalOpen({ onClose }) {
             if (!found_pool) throw new Error("Pool not found");
             try {
                 
-                // await dispatch(approveTokens({ symbol: paymentCurrency.toUpperCase(), amount:  Number((2n*10000n + prices[paymentCurrency])) / 10 ** 8,  spender:{owner: found_pool.$principal}}));
+                await dispatch(approveTokens({ symbol: paymentCurrency.toUpperCase(), amount:  Number((2n*10000n + prices[paymentCurrency])) / 10 ** 8,  spender:{owner: found_pool.$principal}}));
             } catch (e) {
                 toast.update(toastIdRef.current, { status: 'error', title: "Error", description: JSON.stringify(e.message), duration: 5000, isClosable: true })
             }
