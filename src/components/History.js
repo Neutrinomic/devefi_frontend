@@ -132,7 +132,7 @@ function HistoryKind({ kind, x, vec, vid }) {
             </>
         case "withdraw":
 
-            switch(x.location) {
+            switch(Object.keys(x.location)[0]) {
                 case "source":
                    return <> <Val label="amount"><AmountFixed val={(x.amount / 10 ** vec.source.ledger_decimals)}/> <Symbol>{vec.source.ledger_symbol}</Symbol></Val>                        
                     <Val label="fee"><AmountFixed val={(x.fee / 10 ** vec.source.ledger_decimals)}/> <Symbol>{vec.source.ledger_symbol}</Symbol></Val>
