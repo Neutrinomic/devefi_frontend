@@ -1,5 +1,5 @@
 import { Box, Button,  
-    Grid, GridItem, } from '@chakra-ui/react';
+    Grid, GridItem, Stack, useBreakpointValue } from '@chakra-ui/react';
 import { useEffect, useState } from 'react';
 import icblast, { toState } from '@infu/icblast';
 import { InternetIdentity } from "@infu/icblast";
@@ -25,6 +25,7 @@ import { CreateVector } from "../components/CreateVector";
 
 
 export function VectorPage() {
+    const isMobile = useBreakpointValue({ base: true, xl: false });
 
     let blast = useBlast();
     let { architect_id, vid } = useParams();
@@ -52,7 +53,16 @@ export function VectorPage() {
 
     if (!vecs) return <Box>Loading...</Box>
     let vec = vid? vecs[vid] : null;
-    
+
+
+    if (isMobile) return <Stack>
+        <Box><LeftNav /></Box>
+        <Box><ArchitectVectors key={architect_id} vecs={vecs} architect_id={architect_id} current_vid={vid} /></Box>
+        <Box>{blast.logged?<Box textAlign="center" ><CreateVector /></Box>:null}</Box>
+        <Box>{vec != null ? <VectorHeader key={vid} id={vid} info={vec} /> : null}</Box>
+        <Box>{vec != null ? <VectorHistory key={vid} total={vec.total_events} vec={vec} id={vid} /> : null}</Box>
+    </Stack>;
+
     return <Grid
         height="100vh"
         width="100vw"

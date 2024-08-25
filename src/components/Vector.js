@@ -2,7 +2,7 @@
 
 import { Box, Button, GridItem, Grid, Stack, HStack, IconButton, Wrap, Flex, Spacer, FormControl, Text, Checkbox, Radio, RadioGroup, useToast, Alert, AlertIcon } from '@chakra-ui/react';
 import { Await, Link } from "react-router-dom";
-import { AccountAddresses, Address } from "../components/Address"
+import { AccountAddresses, Address, AddressIcon } from "../components/Address"
 import { Time } from "./Time";
 import { numberFormat, Symbol, Amount, ForOne } from "./Amount";
 import { useBlast } from "../icblast";
@@ -18,27 +18,35 @@ export function VectorOverview({ architect_id, id, info, active = false }) {
         {active ? <div className="arrow-right"></div> : null}
 
         <Grid
-            gridTemplateColumns={"170px 1fr 170px 1fr"}
+            gridTemplateColumns={"1fr 1fr"}
             gridTemplateRows={"auto 1fr"}
             ml="4"
             mr="4"
             pt="2" pb="2"
         >
-            <GridItem>
-                <Box className="veclbl">source</Box>
+            <GridItem><Wrap align="center">
+                <AddressIcon addr={info.source.address} />
+                <Stack><Box className="veclbl">source</Box>
                 <TokenSymbol symbol={info.source.ledger_symbol} />
-            </GridItem>
-            <GridItem>
-                <Val label={"balance"}><Amount val={(Number(info.source_balance_available) / 10 ** info.source.ledger_decimals)} /> <Symbol>{info.source.ledger_symbol}</Symbol></Val>
+                </Stack>
+                </Wrap>
+
+                <Wrap><Val label={"balance"}><Amount val={(Number(info.source_balance_available) / 10 ** info.source.ledger_decimals)} /> <Symbol>{info.source.ledger_symbol}</Symbol></Val>
                 <Val label={"tradable"}><Amount val={(Number(info.source_balance_tradable) / 10 ** info.source.ledger_decimals)} /> <Symbol>{info.source.ledger_symbol}</Symbol></Val>
                 <Val label={"rate"}><Amount muted={true} val={(info.rate)} /> <Symbol>{info.source.ledger_symbol}</Symbol> for <ForOne /> <Symbol>{info.destination.ledger_symbol}</Symbol></Val>
+                </Wrap>
             </GridItem>
             <GridItem borderLeft="2px solid var(--chakra-colors-gray-900)" pl="4">
-                <Box className="veclbl">destination</Box>
+            <Wrap align="center">
+                <AddressIcon addr={info.destination.address} />
+                <Stack><Box className="veclbl">destination</Box>
                 <TokenSymbol symbol={info.destination.ledger_symbol} />
-            </GridItem>
-            <GridItem >
-                <Val label={"balance"}><Amount val={(Number(info.destination_balance_available) / 10 ** info.destination.ledger_decimals)} /> <Symbol>{info.destination.ledger_symbol}</Symbol></Val>
+                </Stack>
+                </Wrap>
+                {!info.remote_destination?
+                <Wrap>
+                    <Val label={"balance"}><Amount val={(Number(info.destination_balance_available) / 10 ** info.destination.ledger_decimals)} /> <Symbol>{info.destination.ledger_symbol}</Symbol></Val>
+                </Wrap>:null}
             </GridItem>
         </Grid>
 
@@ -109,13 +117,25 @@ export function VectorHeader({ id, info }) {
             m="4"
         >
             <GridItem>
-                <Box className="veclbl">source</Box>
-                <HStack align="end"><TokenSymbol symbol={info.source.ledger_symbol} /><Box>{numberFormat(info.source_rate_usd)}$</Box></HStack>
+            <Wrap align="center">
+                <AddressIcon addr={info.source.address} />
+                <Stack><Box className="veclbl">source</Box>
+                <TokenSymbol symbol={info.source.ledger_symbol} />
+                <Box>{numberFormat(info.source_rate_usd)}$</Box>
+                </Stack>
+                </Wrap>
                 <AccountAddresses symbol={info.source.ledger_symbol} account={info.source.address} />
             </GridItem>
             <GridItem borderLeft="2px solid var(--chakra-colors-gray-900)" pl="4">
-                <Box className="veclbl">destination {info.remote_destination ? "(remote)" : ""}</Box>
-                <HStack align="end"><TokenSymbol symbol={info.destination.ledger_symbol} /><Box>{numberFormat(info.destination_rate_usd)}$</Box></HStack>
+            <Wrap align="center">
+                <AddressIcon addr={info.destination.address} />
+                <Stack><Box className="veclbl">destination {info.remote_destination ? "(remote)" : ""}</Box>
+                <TokenSymbol symbol={info.destination.ledger_symbol} />
+                <Box>{numberFormat(info.destination_rate_usd)}$</Box>
+                </Stack>
+                </Wrap>
+
+    
                 <AccountAddresses symbol={info.destination.ledger_symbol} account={info.destination.address} />
             </GridItem>
 
@@ -135,6 +155,7 @@ export function VectorHeader({ id, info }) {
                 </HStack>:null}
             </GridItem>
             <GridItem borderLeft="2px solid var(--chakra-colors-gray-900)" pl="4">
+            {!info.remote_destination?<>
                 <Val label={"balance"}><Amount val={(Number(info.destination_balance_available) / 10 ** info.destination.ledger_decimals)} /> <Symbol>{info.destination.ledger_symbol}</Symbol>
                     <Box as="span" className="muted">{" "}({((Number(info.destination_balance) / 10 ** info.destination.ledger_decimals) * info.destination_rate_usd).toFixed(2)}$)</Box>
 
@@ -142,6 +163,7 @@ export function VectorHeader({ id, info }) {
                 <Val label={"in transit"}><Amount val={((Number(info.destination_balance) - Number(info.destination_balance_available)) / 10 ** info.destination.ledger_decimals)} /> <Symbol>{info.destination.ledger_symbol}</Symbol>
                     <Box as="span" className="muted">{" "}({(((Number(info.destination_balance) - Number(info.destination_balance_available)) / 10 ** info.destination.ledger_decimals) * info.destination_rate_usd).toFixed(2)}$)</Box>
                 </Val>
+                </>:null}
                 {mine?<HStack>
                     {/* <IconButton aria-label='Deposit' onClick={deposit_destination} icon={<MdInput />}/> */}
                     {!info.remote_destination ? <WithdrawVector id={id} symbol={info.destination.ledger_symbol} max={(Number(info.destination_balance_available) / 10 ** info.destination.ledger_decimals)} location={{ destination: null }}><IconButton aria-label='Withdraw' icon={<MdOutput />} /></WithdrawVector> : null}

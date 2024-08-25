@@ -204,11 +204,11 @@ export function ModalOpen({ onClose }) {
             {prices ? <Flex mt="20px" alignItems="center"><Box><Button onClick={onClose}>Cancel</Button></Box>
                 <Spacer />
                 <Button isLoading={disableButton == 'ntn'} h="76px" colorScheme='blue' isDisabled={!valid.ok || !agree} onClick={() => createSend('ntn')}>
-                    Create <br />one-time fee {(Number(prices.ntn) / 10 ** 8).toFixed(2)} NTN<br/>per vector
+                    Create <br />for {(Number(prices.ntn) / 10 ** 8).toFixed(2)} NTN<br/>
                 </Button>
                 <Box p="2">or</Box>
                 <Button isLoading={disableButton == 'icp'} h="76px" colorScheme='blue' isDisabled={!valid.ok || !agree} onClick={() => createSend('icp')}>
-                    Create <br />one-time fee {(Number(prices.icp) / 10 ** 8).toFixed(2)} ICP<br/>per vector
+                    Create <br />for {(Number(prices.icp) / 10 ** 8).toFixed(2)} ICP<br/>
                 </Button>
             </Flex> : null}
         </ModalBody>

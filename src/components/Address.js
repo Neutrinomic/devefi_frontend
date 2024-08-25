@@ -3,6 +3,7 @@ import { encodeIcrcAccount } from "@dfinity/ledger-icrc";
 import { Principal } from "@dfinity/principal";
 import { AccountIdentifier, SubAccount } from "@dfinity/ledger-icp";
 import {CopyIcon} from "@chakra-ui/icons";
+import { Hashicon } from '@emeraldpay/hashicon-react';
 
 export function AccountAddresses ({symbol, account}) {
     let addresses = AccountToText(symbol, account);
@@ -15,6 +16,11 @@ export function AccountAddresses ({symbol, account}) {
     </Stack>
 
 }
+
+
+export function AddressIcon({addr}) {
+    return <Hashicon value={AccountToText("", addr).icrc} size={48} />
+};
 
 export function Address({ addr }) {
     let ad = addr;

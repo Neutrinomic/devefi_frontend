@@ -59,7 +59,7 @@ export function TransferToVector({ to, symbol, children }) {
         initialFocusRef={firstFieldRef}
         onOpen={onOpen}
         onClose={onClose}
-        placement='left'
+        // placement='left'
         closeOnBlur={true}
   
     >
@@ -158,14 +158,14 @@ export function WithdrawAccount({ symbol, children }) {
         initialFocusRef={firstFieldRef}
         onOpen={onOpen}
         onClose={onClose}
-        placement='right'
+      
         closeOnBlur={false}
        
     >
         <PopoverTrigger>
             {children}
         </PopoverTrigger>
-        {isOpen?<PopoverContent p={5}  w={"400px"}>
+        {isOpen?<PopoverContent p={5}  maxW={"400px"}>
             <Box>Withdraw <Symbol>{symbol}</Symbol> from wallet</Box>
             <Stack>
             <InputAccount symbol={symbol} onChange={setAccount}/>
@@ -206,7 +206,7 @@ export function WithdrawVector({ id, symbol, max, location, children }) {
         initialFocusRef={firstFieldRef}
         onOpen={onOpen}
         onClose={onClose}
-        placement='left'
+        // placement='left'
         closeOnBlur={true}
     >
         <PopoverTrigger>

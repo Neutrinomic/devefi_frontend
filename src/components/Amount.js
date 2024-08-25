@@ -15,12 +15,11 @@ export function Amount({val, muted=false}) {
 
     const prevN = usePreviousValue(val);
     let hl = {
-        key: val,
         className: "amount " + (val > prevN ? ('hl-up' + (muted?"-muted":"")) : val < prevN ? ('hl-down' +(muted?"-muted":"")): ''),
       };
 
     let shortAmount = numberFormat(val);
-    return <Box  as="span" {...hl}>{shortAmount}</Box>
+    return <Box as="span" key={val} {...hl}>{shortAmount}</Box>
 }
 
 export function numberFormat(am) {

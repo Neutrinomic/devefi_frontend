@@ -150,6 +150,10 @@ let custom_login = () => {
         InternetIdentity.client.login({
         maxTimeToLive: BigInt(90 * 24 * 60 * 60 * 1000 * 1000 * 1000),
         idleTimeout: 1000 * 60 * 60 * 24 * 3,
+        idleOptions: {
+            disableIdle: true,
+            disableDefaultIdleCallback: true
+          },
         onSuccess: async (e) => {
           resolve();
         },
