@@ -91,7 +91,7 @@ export function VectorPage() {
                     </PanelGroup>
                 </Panel>
                 <PanelResizeHandle className="resizehandle" />
-                <Panel maxSize="35">
+                <Panel maxSize="45">
                     {vec != null ? <VectorHeader key={vid} id={vid} info={vec} /> : null}
                 </Panel>
             </PanelGroup>

@@ -53,7 +53,7 @@ export function VectorHistory({ id, total, vec }) {
 
 
     if (!data.length) return null;
-    return <Box className="scrollY sbar diagonal-lines" pb="10vh">
+    return <Box className="scrollY scrollX sbar diagonal-lines" pb="10vh">
         
             <Flex className="paneltitle" mt="2px">
                 <Box pl="2">VECTOR LOG</Box>
@@ -71,7 +71,7 @@ function HistoryEntry({ id, d, vec, vid }) {
     let now = Math.floor(Date.now() / 1000);
     let highlight = (d.timestamp > now - 60*2)?"hl-history":"";
 
-    return <HStack className={"hist-entry "+highlight} borderBottom="1px solid var(--chakra-colors-gray-900)" spacing="4" sx={{ overflow: "hidden" }}>
+    return <HStack className={"hist-entry "+highlight} borderBottom="1px solid var(--chakra-colors-gray-900)" spacing="4">
             <Val label="id">{id}</Val>
             <Val label="kind" w={"150px"}><ArrowRightIcon w="14px" h="14px" /> {kind} </Val>
             <Val label="time" w={"190px"}><Time time={d.timestamp} /></Val>

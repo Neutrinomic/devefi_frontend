@@ -10,6 +10,11 @@
     height: 100%;
 }
 
+.scrollX {
+  overflow-x: scroll;
+  height: 100%;
+}
+
 .react-flow__attribution {
     background-color: var(--chakra-colors-gray-900);
 }
@@ -45,6 +50,10 @@
     background: var(--sb-thumb-color);
     border-radius: 10px;
 
+}
+
+.sbar::-webkit-scrollbar-corner {
+  background-color: var(--chakra-colors-gray-800);
 }
 
 .token-symbol {
