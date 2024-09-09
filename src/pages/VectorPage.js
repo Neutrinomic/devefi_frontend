@@ -22,7 +22,7 @@ import { Nav } from "../components/Nav";
 import { LeftNav } from "../components/Nav";
 
 import { CreateVector } from "../components/CreateVector";
-
+import { Designer } from "../components/Designer";
 
 export function VectorPage() {
     const isMobile = useBreakpointValue({ base: true, xl: false });
@@ -81,8 +81,9 @@ export function VectorPage() {
                 <Panel>
                     <PanelGroup direction="vertical">
                         <Panel style={{ position: "relative" }}>
-                            <ArchitectVectors key={architect_id} vecs={vecs} architect_id={architect_id} current_vid={vid} />
-                            {blast.logged?<Box sx={{ position: "absolute", right: "30px", bottom: "18px" }}><CreateVector /></Box>:null}
+                            <Designer key={architect_id} vecs={vecs} architect_id={architect_id} current_vid={vid}/>
+                            {/* <ArchitectVectors key={architect_id} vecs={vecs} architect_id={architect_id} current_vid={vid} /> */}
+                            {blast.logged?<Box sx={{ position: "absolute", right: "30px", bottom: "18px" }}><CreateVector /></Box>:null} 
                         </Panel>
                         <PanelResizeHandle className="resizehandle" />
                         <Panel>
