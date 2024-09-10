@@ -9,10 +9,9 @@ import { useSelector } from 'react-redux';
 import { MdInput, MdOutput } from "react-icons/md";
 import { IconButton } from '@chakra-ui/react';
 import { WithdrawAccount } from './Transfer';
-import {AdvancedGuideModal} from './Help';
 export function Nav() {
     return <Box p={2} className="logotitle">
-        <Flex>NEUTRINITE DEVEFI <Spacer /><AdvancedGuideModal/></Flex>
+        <Flex>NEUTRINITE DEVEFI <Spacer /></Flex>
     </Box>
 }
 

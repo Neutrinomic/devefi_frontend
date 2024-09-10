@@ -39,7 +39,7 @@ export async function refresh() {
     glob.cur.ic = icblast({ identity: InternetIdentity.getIdentity() })
     glob.cur.root = await glob.cur.ic("wxer6-3yaaa-aaaal-qjnua-cai", rootdid);
     glob.cur.prices = await glob.cur.ic("u45jl-liaaa-aaaam-abppa-cai", aggregatordid);
-
+    glob.cur.reg = await glob.cur.ic("elgu6-jiaaa-aaaal-qkkiq-cai");
     // Get tokens from the aggregator
     let tokens = await glob.cur.prices.get_config();
 
@@ -104,13 +104,11 @@ export async function refresh() {
 
    
 
-
     // Fetch ledger fees
     await Promise.all(Object.keys(glob.cur.ledgers).map(async (symbol) => {
         glob.cur.meta.ledgers[symbol].fee = Number(await glob.cur.ledgers[symbol].icrc1_fee());
     }));
 
-    // console.log(glob.cur.meta.ledgers)
 
     subs.notify(glob.cur);
 }
