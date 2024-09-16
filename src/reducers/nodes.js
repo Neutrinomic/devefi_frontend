@@ -5,6 +5,8 @@ import { applyNodeChanges, applyEdgeChanges } from '@xyflow/react';
 import { produce } from 'immer';
 import { update } from 'autosize';
 import account from './account.js';
+import { encodeIcrcAccount, decodeIcrcAccount } from "@dfinity/ledger-icrc";
+import { Principal } from "@dfinity/principal";
 
 const initialState = {
   factories: [],
@@ -12,12 +14,18 @@ const initialState = {
   ledgers: {
     ic: {
       "ryjl3-tyaaa-aaaaa-aaaba-cai": { symbol: "ICP" },
-      "f54if-eqaaa-aaaaq-aacea-cai": { symbol: "NTN" }
+      "f54if-eqaaa-aaaaq-aacea-cai": { symbol: "NTN" },
+      "mxzaz-hqaaa-aaaar-qaada-cai": { symbol: "ckBTC" },
+      "xevnm-gaaaa-aaaar-qafnq-cai": { symbol: "ckUSDC" },
     }
   },
   canvas: {
 
   },
+  defaults : {
+
+  },
+  formtarget : {},
   next_canvas_id: 0,
   current_canvas_id: 0,
 };
@@ -46,9 +54,20 @@ const canvasAddEdgeInternal = (state, action) => {
   state.canvas[state.current_canvas_id].next_edge_id++;
 };
 
+const encodeAccount = (account) => {
+  return encodeIcrcAccount({
+    owner: Principal.fromText(account.owner),
+    subaccount: account.subaccount ? fromHexString(account.subaccount) : null
+  });
+}
+
+const fromHexString = (hexString) =>
+  Uint8Array.from(hexString.match(/.{1,2}/g).map((byte) => parseInt(byte, 16)));
+
+
 const refreshEdgesInternal = (state) => {
 
-
+  let adding_account = false;
   state.canvas[state.current_canvas_id].edges = [];
 
   // remove all account nodes 
@@ -59,7 +78,7 @@ const refreshEdgesInternal = (state) => {
     if (node.type === "account") continue;
     let xnode = state.my[node.data.factory].find(n => n.id === node.data.node_id);
 
-    let unused_targets = xnode.destinations.map((x, idx) => x.ic.account ? [JSON.stringify(x.ic.account), idx] : false).filter(Boolean)
+    let unused_targets = xnode.destinations.map((x, idx) => x.ic.account ? [encodeAccount(x.ic.account), idx] : false).filter(Boolean)
     let used_targets = [];
 
     for (let node_to of state.canvas[state.current_canvas_id].nodes) {
@@ -69,8 +88,10 @@ const refreshEdgesInternal = (state) => {
       for (let source of xnode.destinations) {
         let source_platform = Object.keys(source)[0];
         let source_principal = source[source_platform].ledger;
-        let source_account = JSON.stringify(source[source_platform].account);
+        let source_account = source[source_platform].account ? encodeAccount(source[source_platform].account) : null;
         let to_idx = 0;
+        
+        const external = source[source_platform]?.account?.owner != node.data.factory;
 
         if (node_to.type === "account") {
           if (source_account === node_to.id) {
@@ -78,6 +99,7 @@ const refreshEdgesInternal = (state) => {
               type: "smoothstep",
               source: node.id,
               sourceHandle: "output-" + from_idx,
+              external,
               target: node_to.id,
               targetHandle: "input-0",
               animated: true,
@@ -86,6 +108,8 @@ const refreshEdgesInternal = (state) => {
                 width: 30,
                 height: 30
               },
+              style: { stroke:  external?'orange':'white' } // Change the edge color here
+
             };
 
             canvasAddEdgeInternal(state, { payload: { edge } })
@@ -100,13 +124,13 @@ const refreshEdgesInternal = (state) => {
 
           let destination_platform = Object.keys(destination)[0];
           let destination_principal = destination[destination_platform].ledger;
-          let destination_account = JSON.stringify(destination[destination_platform].account);
+          let destination_account = destination[destination_platform].account ? encodeAccount(destination[destination_platform].account) : null;
 
           if (source_account === destination_account) {
-            console.log("match", source_account, JSON.stringify(unused_targets));
+
             unused_targets = unused_targets.filter(x => x[0] !== destination_account);
             used_targets.push(destination_account);
-            console.log("after", JSON.stringify(unused_targets));
+            const external = destination[destination_platform].account.owner != node.data.factory;
 
             let edge = {
               type: "smoothstep",
@@ -114,12 +138,15 @@ const refreshEdgesInternal = (state) => {
               sourceHandle: "output-" + from_idx,
               target: node_to.id,
               targetHandle: "input-" + to_idx,
+              external,
               animated: true,
               markerEnd: {
                 type: 'arrow',
                 width: 30,
                 height: 30
               },
+              style: { stroke: external?'orange':'white' } // Change the edge color here
+
             };
 
             canvasAddEdgeInternal(state, { payload: { edge } })
@@ -134,9 +161,10 @@ const refreshEdgesInternal = (state) => {
 
     }
 
-    console.log({ unused_targets });
+
 
     for (let target of unused_targets) {
+      adding_account = true;
       canvasAddNodeInternal(state, {
         payload: {
 
@@ -144,7 +172,7 @@ const refreshEdgesInternal = (state) => {
           type: "account",
           position: { x: 100, y: 100 * state.canvas[state.current_canvas_id].nodes.length },
           data: {
-
+            to_node: true,
           }
         }
       });
@@ -153,15 +181,23 @@ const refreshEdgesInternal = (state) => {
     // Remove all account nodes that have vectors deployed to them
     for (let used_target of used_targets) {
       state.canvas[state.current_canvas_id].nodes = state.canvas[state.current_canvas_id].nodes.filter(n => n.id !== used_target || n.type === "vector");
-    }}
+    }
 
-    // Remove account nodes without edges to them
-    // state.canvas[state.current_canvas_id].nodes = state.canvas[state.current_canvas_id].nodes.filter(n => {
-    //   if (n.type === "account") {
-    //     return state.canvas[state.current_canvas_id].edges.find(e => e.target === n.id) || state.canvas[state.current_canvas_id].edges.find(e => e.source === n.id);
-    //   } else {
-    //     return true;
-    // }})
+  }
+
+  // Remove account nodes without edges to them and aren't user added
+  if (adding_account == false) {
+    state.canvas[state.current_canvas_id].nodes = state.canvas[state.current_canvas_id].nodes.filter(n => {
+      if (n.type === "account" && n.data.to_node == true) {
+
+        let edge = state.canvas[state.current_canvas_id].edges.find(e => e.target === n.id)
+        
+        return edge ? true : false;
+      } else {
+        return true;
+      }
+    })
+  }
 };
 
 const canvasAddNodeInternal = (state, action) => {
@@ -182,20 +218,24 @@ const refreshCanvasNodesInternal = (state) => {
     let node_meta = state.factories.find(f => f[0] === factory)[1].find(n => n.id === node_type);
     node.data.label = node_meta.name;
     node.data.governed = node_meta.governed_by;
+    node.data.node_type = node_type;
     node.data.input_ports = xnode.sources.map(x => {
       let platform = Object.keys(x)[0];
       let principal = x[platform].ledger;
       let account = x[platform].account;
-      return ({ type: state.ledgers[platform]?.[principal]?.symbol || "...", desc: '' })
+      let desc = x[platform].name;
+      return ({ type: state.ledgers[platform]?.[principal]?.symbol || "...", desc })
     });
     node.data.output_ports = xnode.destinations.map(x => {
       let platform = Object.keys(x)[0];
       let principal = x[platform].ledger;
       let account = x[platform].account;
-      return ({ type: state.ledgers[platform]?.[principal]?.symbol || "...", desc: '' })
+      let desc = x[platform].name;
+      return ({ type: state.ledgers[platform]?.[principal]?.symbol || "...", desc })
     });
   }
 }
+
 
 export const nodeSlice = createSlice({
   name: 'nodes',
@@ -212,14 +252,22 @@ export const nodeSlice = createSlice({
       state.canvas[state.current_canvas_id].nodes = applyNodeChanges(action.payload.changes, state.canvas[state.current_canvas_id].nodes)
       refreshEdgesInternal(state);
     },
+    canvasAddNode: canvasAddNodeInternal,
 
     canvasAddEdge: canvasAddEdgeInternal,
-
+    setFormTargetState: (state, action) => {
+      state.formtarget = action.payload;
+    },
     refreshEdges: refreshEdgesInternal,
     setFactories: (state, action) => {
       state.factories = action.payload;
     },
-
+    setDefaults: (state, action) => {
+      if (!state.defaults[action.payload.factory]) {
+        state.defaults[action.payload.factory] = {};
+      }
+      state.defaults[action.payload.factory][action.payload.type_id] = action.payload.defaults;
+    },
     setNodes: (state, action) => {
       state.my[action.payload.factory] = action.payload.nodes;
     },
@@ -266,17 +314,20 @@ export const nodeSlice = createSlice({
           node_id: node.id,
           label: node_meta.name,
           governed: node_meta.governed_by,
+          node_type: node_type,
           input_ports: node.sources.map(x => {
             let platform = Object.keys(x)[0];
             let principal = x[platform].ledger;
             let account = x[platform].account;
-            return ({ type: state.ledgers[platform]?.[principal]?.symbol || "...", desc: '' })
+            let desc = x[platform].name;
+            return ({ type: state.ledgers[platform]?.[principal]?.symbol || "...", desc })
           }),
           output_ports: node.destinations.map(x => {
             let platform = Object.keys(x)[0];
             let principal = x[platform].ledger;
             let account = x[platform].account;
-            return ({ type: state.ledgers[platform]?.[principal]?.symbol || "...", desc: '' })
+            let desc = x[platform].name;
+            return ({ type: state.ledgers[platform]?.[principal]?.symbol || "...", desc })
           })
         }
       };
@@ -292,7 +343,20 @@ export const nodeSlice = createSlice({
 });
 
 
-export const { changeCanvasTo, setFactories, refreshEdges, updateNode, canvasAddEdge, setNodes, deleteNodes, addNodes, newCanvas, addNodeToCanvas, canvasNodeChange, canvasEdgeChange } = nodeSlice.actions;
+export const { changeCanvasTo, setFactories, refreshEdges, updateNode, canvasAddEdge, setNodes, deleteNodes, addNodes, newCanvas, addNodeToCanvas, canvasNodeChange, canvasEdgeChange, canvasAddNode, setDefaults, setFormTargetState } = nodeSlice.actions;
+
+export const addUserAccountToCanvas = (account_text) => async (dispatch, getState) => {
+  dispatch(canvasAddNode({
+
+    id: account_text,
+    type: "account",
+    position: { x: 100, y: 100 },
+    data: {
+      to_node: false,
+    }
+
+  }))
+};
 
 export const canvasEdgeChangePromise = ({ changes }) => async (dispatch, getState) => {
   const state = getState();
@@ -300,34 +364,37 @@ export const canvasEdgeChangePromise = ({ changes }) => async (dispatch, getStat
   for (let change of changes) {
     if (change.type === 'remove') {
       // remove only if it's currently selected edge
-      
-      let cur_edge = state.nodes.canvas[state.nodes.current_canvas_id].edges.filter(e => e.id !== change.id);
+
+      let cur_edge = state.nodes.canvas[state.nodes.current_canvas_id].edges.find(e => e.id == change.id);
       if (cur_edge.selected === true) {
-      
-      let id = change.id;
 
-      let edge = state.nodes.canvas[state.nodes.current_canvas_id].edges.find(e => e.id === id);
-      // get source node and remove destination remotely
-      let sourceNode = state.nodes.canvas[state.nodes.current_canvas_id].nodes.find(node => node.id === edge.source);
-      let realNode = state.nodes.my[sourceNode.data.factory].find(n => n.id === sourceNode.data.node_id);
-      console.log({ sourceNode, realNode });
+        let id = change.id;
 
-      let blast = getBlast();
-      let source_can = await blast.ic(sourceNode.data.factory);
-      let destinations = produce(realNode.destinations, draft => {
-        let source_port_id = parseInt(edge.sourceHandle.split('-')[1]);
-        draft[source_port_id].ic.account = null;
-      });
-      let modified_node_resp = await source_can.icrc55_modify_node(sourceNode.data.node_id, {
-        destinations,
-        refund: realNode.refund,
-        controllers: realNode.controllers,
-      }, null)
-      let modified_node = toState(modified_node_resp.ok);
-      console.log({ modified_node });
+        let edge = state.nodes.canvas[state.nodes.current_canvas_id].edges.find(e => e.id === id);
+        // get source node and remove destination remotely
+        let sourceNode = state.nodes.canvas[state.nodes.current_canvas_id].nodes.find(node => node.id === edge.source);
+        let realNode = state.nodes.my[sourceNode.data.factory].find(n => n.id === sourceNode.data.node_id);
+        
 
-      //apply modification
-      dispatch(updateNode({ factory: sourceNode.data.factory, node: modified_node }))
+        let blast = getBlast();
+        let source_can = await blast.ic(sourceNode.data.factory);
+        let destinations = produce(realNode.destinations, draft => {
+          let source_port_id = parseInt(edge.sourceHandle.split('-')[1]);
+          draft[source_port_id].ic.account = null;
+        });
+        let modified_node_resp = await source_can.icrc55_modify_node(sourceNode.data.node_id, {
+          destinations,
+          refund: realNode.refund,
+          controllers: realNode.controllers,
+        }, null)
+        if (!modified_node_resp.ok) {
+          throw new Error(modified_node_resp.err);
+        }
+        let modified_node = toState(modified_node_resp.ok);
+        
+
+        //apply modification
+        dispatch(updateNode({ factory: sourceNode.data.factory, node: modified_node }))
       }
 
     }
@@ -337,6 +404,23 @@ export const canvasEdgeChangePromise = ({ changes }) => async (dispatch, getStat
 
   dispatch(canvasEdgeChange({ changes: new_changes }));
 };
+
+export const expandAccount = (account_text) => async (dispatch, getState) => {
+  const state = getState();
+  for (let factory of Object.keys(state.nodes.my)) {
+    for (let node of state.nodes.my[factory]) {
+      for (let source of node.sources) {
+        let platform = Object.keys(source)[0];
+        let principal = source[platform].ledger;
+        let account = source[platform].account ? encodeAccount(source[platform].account) : null;
+        
+        if (account === account_text) {
+          dispatch(addNodeToCanvas({ factory: factory, id: node.id }));
+        }
+      }
+    }
+  }
+}
 
 export const canvasOnConnect = (params) => async (dispatch, getState) => {
 
@@ -350,51 +434,84 @@ export const canvasOnConnect = (params) => async (dispatch, getState) => {
   // Get the source and target port types
   let source_port_id = parseInt(params.sourceHandle.split('-')[1]);
   const sourcePortType = sourceNode.data.output_ports[source_port_id].type;
-  let target_port_id = parseInt(params.targetHandle.split('-')[1]);
-  const targetPortType = targetNode.data.input_ports[target_port_id].type;
 
-  // Prevent multiple connections from the same output port
-  const isOutputAlreadyConnected = edges.some(edge => edge.source === params.source && edge.sourceHandle === params.sourceHandle);
+   // Prevent multiple connections from the same output port
+   const isOutputAlreadyConnected = edges.some(edge => edge.source === params.source && edge.sourceHandle === params.sourceHandle);
 
-  // Enforce port type matching
-  const isSamePortType = sourcePortType === targetPortType;
 
-  if (isOutputAlreadyConnected) {
-    console.log("Output port is already connected. Connection rejected.");
-    return false; // No change
+  if (targetNode.type === "account") {
+
+    let source_node = state.nodes.my[sourceNode.data.factory].find(n => n.id === sourceNode.data.node_id);
+
+
+    let blast = getBlast();
+    let source_can = await blast.ic(sourceNode.data.factory);
+ 
+    let destinations = produce(source_node.destinations, draft => {
+      draft[source_port_id].ic.account = decodeIcrcAccount(targetNode.id);
+    });
+
+    let modified_node_resp = await source_can.icrc55_modify_node(sourceNode.data.node_id, {
+      destinations,
+      refund: source_node.refund,
+      controllers: source_node.controllers,
+    }, null)
+    if (!modified_node_resp.ok) {
+      throw new Error(modified_node_resp.err);
+    }
+    let modified_node = toState(modified_node_resp.ok);
+    
+
+    //apply modification
+    dispatch(updateNode({ factory: sourceNode.data.factory, node: modified_node }));
+
+  } else {
+    let target_port_id = parseInt(params.targetHandle.split('-')[1]);
+    const targetPortType = targetNode.data.input_ports[target_port_id].type;
+
+   
+    // Enforce port type matching
+    const isSamePortType = sourcePortType === targetPortType;
+
+    if (isOutputAlreadyConnected) {
+      console.log("Output port is already connected. Connection rejected.");
+      return false; // No change
+    }
+
+    if (!isSamePortType) {
+      console.log(`Cannot connect ${sourcePortType} to ${targetPortType}. Connection rejected.`);
+      return false; // No change
+    }
+
+    let source_node = state.nodes.my[sourceNode.data.factory].find(n => n.id === sourceNode.data.node_id);
+    let destination_node = state.nodes.my[targetNode.data.factory].find(n => n.id === targetNode.data.node_id);
+
+    let blast = getBlast();
+    let source_can = await blast.ic(sourceNode.data.factory);
+    
+
+    
+
+    let destinations = produce(source_node.destinations, draft => {
+      draft[source_port_id].ic.account = destination_node.sources[target_port_id].ic.account;
+    });
+
+    
+    let modified_node_resp = await source_can.icrc55_modify_node(sourceNode.data.node_id, {
+      destinations,
+      refund: source_node.refund,
+      controllers: source_node.controllers,
+    }, null)
+    if (!modified_node_resp.ok) {
+      throw new Error(modified_node_resp.err);
+    }
+    let modified_node = toState(modified_node_resp.ok);
+    
+
+    //apply modification
+    dispatch(updateNode({ factory: sourceNode.data.factory, node: modified_node }));
   }
 
-  if (!isSamePortType) {
-    console.log(`Cannot connect ${sourcePortType} to ${targetPortType}. Connection rejected.`);
-    return false; // No change
-  }
-
-  let source_node = state.nodes.my[sourceNode.data.factory].find(n => n.id === sourceNode.data.node_id);
-  let destination_node = state.nodes.my[targetNode.data.factory].find(n => n.id === targetNode.data.node_id);
-
-  let blast = getBlast();
-  let source_can = await blast.ic(sourceNode.data.factory);
-  console.log(params);
-
-  console.log({ source_node, destination_node, source_port_id, target_port_id })
-
-  let destinations = produce(source_node.destinations, draft => {
-    draft[source_port_id].ic.account = destination_node.sources[target_port_id].ic.account;
-  });
-
-  console.log({ destinations });
-  let modified_node_resp = await source_can.icrc55_modify_node(sourceNode.data.node_id, {
-    destinations,
-    refund: source_node.refund,
-    controllers: source_node.controllers,
-  }, null)
-  let modified_node = toState(modified_node_resp.ok);
-  console.log({ modified_node });
-
-  //apply modification
-  dispatch(updateNode({ factory: sourceNode.data.factory, node: modified_node }));
-
-  //dispatch(canvasAddEdge({ edge: params }));
 }
 
 export const fetchFactories = () => async dispatch => {
@@ -407,14 +524,26 @@ export const fetchUserVectors = () => async (dispatch, getState) => {
   let blast = getBlast();
   let state = getState();
   for (let factory of state.nodes.factories) {
-    console.log("--fetchUserFactoryVectors", factory);
+    
     await dispatch(fetchUserFactoryVectors(factory[0]));
   }
 }
 
+export const setFormTarget = (target) => async (dispatch, getState) => {
+  dispatch(setFormTargetState(target));
+  dispatch(loadDefaults(target));
+}
+
+export const loadDefaults = ({factory, type_id}) => async (dispatch, getState) => {
+  let blast = getBlast();
+  let can = await blast.ic(factory);
+  let resp = await can.icrc55_get_defaults(type_id);
+  dispatch(setDefaults({factory, type_id, defaults: toState(resp[type_id])}));
+
+};
 
 export const fetchUserFactoryVectors = (factory) => async (dispatch, getState) => {
-  console.log("fetchUserFactoryVectors", factory);
+  
   let blast = getBlast();
   let can = await blast.ic(factory);
 
@@ -430,9 +559,12 @@ export const fetchUserFactoryVectors = (factory) => async (dispatch, getState) =
 export const createNode = (factory, req, creq) => async (dispatch, getState) => {
   let blast = getBlast();
   let can = await blast.ic(factory);
-  console.log({ factory, req, creq });
+  
   let new_node_resp = await can.icrc55_create_node(req, creq);
-
+  
+  if (!new_node_resp.ok) {
+    throw new Error(new_node_resp.err);
+  }
   let new_node = toState(new_node_resp.ok)
   dispatch(addNodes({ factory, nodes: [new_node] }));
   dispatch(addNodeToCanvas({ factory, id: new_node.id }));

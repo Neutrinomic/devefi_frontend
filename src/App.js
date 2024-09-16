@@ -19,8 +19,7 @@ function App() {
    
           <Routes>
             <Route index element={<Intro />} />
-            <Route path="architect/:architect_id" element={<VectorPage />} />
-            <Route path="architect/:architect_id/:vid" element={<VectorPage />} />
+            <Route path="architect/:architect_id/*" element={<VectorPage />} />
             {/* <Route path="vectors/:id" element={<VectorPage />} /> */}
 
           </Routes>

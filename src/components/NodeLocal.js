@@ -15,8 +15,9 @@ import { useBlast } from "../icblast"
 import { toState } from "@infu/icblast";
 import { useDispatch, useSelector } from "react-redux"
 import { createNode, addNodeToCanvas} from "../reducers/nodes"
+import {Nodeicon} from './Pylon';
 
-export function ModalOpen({ onClose }) {
+export function NodeLocal({ onClose }) {
 
     const blast = useBlast()
     const dispatch = useDispatch();
@@ -46,48 +47,21 @@ export function ModalOpen({ onClose }) {
         })
     })
 
-
-
-    return <ModalContent >
-        <ModalHeader>Add vector to canvas</ModalHeader>
-        <ModalCloseButton />
-        <ModalBody pb={6}>
+    return <Box p="2">
             {
-                all_nodes.map(node => (
-                    <Box key={node.id} p={2} bg="gray.900" borderRadius="8" mb={2} onClick={() => dispatch(addNodeToCanvas({factory: node.factory, id:node.id}))}>
-                        <Flex>
-                                
-                                <Text>{node.name}</Text>
-                                <Text ml="2">{node.id}</Text>
-                                <Spacer />
-                                <Text color="gray.600">{node.factory}</Text>
-
-                            {/* <IconButton  icon={<AddIcon />} /> */}
-                        </Flex>
+                all_nodes.map((node, idx) => {
+                   
+                    return(
+                    <Box key={idx} p={2} bg="gray.900" borderRadius="8" mb={2} onClick={() => dispatch(addNodeToCanvas({factory: node.factory, id:node.id}))}>
+                        <HStack>
+                                <Box><Nodeicon factory={node.factory+"-"+node.type} id={node.id} width="40px"   /></Box>
+                                <Text>{node.name} {node.id}</Text>
+                        </HStack>
                     </Box>
 
-                ))
+                )})
 
             }
-        </ModalBody>
-    </ModalContent>
+        </Box>
 }
 
-export function AddVector() {
-
-    const { isOpen, onOpen, onClose } = useDisclosure()
-
-    return (
-        <>
-            <IconButton onClick={onOpen} icon={<DownloadIcon />} w={"50px"} h={"50px"} colorScheme={"blue"} />
-
-            <Modal size="xl"
-                isOpen={isOpen}
-                onClose={onClose}
-            >
-                <ModalOverlay />
-                {isOpen ? <ModalOpen onClose={onClose} /> : null}
-            </Modal>
-        </>
-    )
-}

@@ -24,12 +24,14 @@ import { Nav } from "../components/Nav";
 import { LeftNav } from "../components/Nav";
 
 import { NewVector } from "../components/NewVector";
-import { AddVector } from "../components/VectorLibrary";
+import {AddAccount} from "../components/AddAccount";
 import { Designer } from "../components/Designer";
 import { UpDownIcon } from '@chakra-ui/icons';
 
 import { useDispatch, useSelector } from 'react-redux';
 import {changeCanvasTo, newCanvas} from "../reducers/nodes";
+import { ControlPanel} from "../components/ControlPanel"; 
+
 export function VectorPage() {
     const isMobile = useBreakpointValue({ base: true, xl: false });
     let [expanded_canvas, setExpandedCanvas] = useState(false);
@@ -63,13 +65,13 @@ export function VectorPage() {
     let vec = vid ? vecs[vid] : null;
 
 
-    if (isMobile) return <Stack>
-        <Box><LeftNav /></Box>
-        <Box><ArchitectVectors key={architect_id} vecs={vecs} architect_id={architect_id} current_vid={vid} /></Box>
-        <Box>{blast.logged ? <Box textAlign="center" ><AddVector /><NewVector /></Box> : null}</Box>
-        <Box>{vec != null ? <VectorHeader key={vid} id={vid} info={vec} /> : null}</Box>
-        <Box>{vec != null ? <VectorHistory key={vid} total={vec.total_events} vec={vec} id={vid} /> : null}</Box>
-    </Stack>;
+    // if (isMobile) return <Stack>
+    //     <Box><LeftNav /></Box>
+    //     <Box><ArchitectVectors key={architect_id} vecs={vecs} architect_id={architect_id} current_vid={vid} /></Box>
+    //     <Box>{blast.logged ? <Box textAlign="center" ><AddAccount /><AddVector /><NewVector /></Box> : null}</Box>
+    //     <Box>{vec != null ? <VectorHeader key={vid} id={vid} info={vec} /> : null}</Box>
+    //     <Box>{vec != null ? <VectorHistory key={vid} total={vec.total_events} vec={vec} id={vid} /> : null}</Box>
+    // </Stack>;
 
 
 
@@ -96,17 +98,18 @@ export function VectorPage() {
                                 <IconButton sx={{ position: "absolute", right: "10px", top: "10px", zIndex: 10 }} onClick={() => setExpandedCanvas(!expanded_canvas)} icon={<UpDownIcon />}  colorScheme={"gray"} />
                                 <CanvasSwitch />
                                 <Designer key={architect_id+"-"+current_canvas} vecs={vecs} architect_id={architect_id} current_vid={vid} />
-                                {blast.logged ? <Box sx={{ position: "absolute", right: "30px", bottom: "18px" }}><HStack><AddVector /><NewVector /></HStack></Box> : null}
+                                {blast.logged ? <Box sx={{ position: "absolute", right: "30px", bottom: "18px" }}></Box> : null}
                             </Panel>
-                            {expanded_canvas?null:<PanelResizeHandle className="resizehandle" />}
+                            {/* {expanded_canvas?null:<PanelResizeHandle className="resizehandle" />}
                             {expanded_canvas?null:<Panel>
                                 {vec != null ? <VectorHistory key={vid} total={vec.total_events} vec={vec} id={vid} /> : null}
-                            </Panel>}
+                            </Panel>} */}
                         </PanelGroup>
                     </Panel>
                     {expanded_canvas?null:<PanelResizeHandle className="resizehandle" />}
                     {expanded_canvas?null:<Panel maxSize="45">
-                        {vec != null ? <VectorHeader key={vid} id={vid} info={vec} /> : null}
+                        <ControlPanel />
+                        {/* {vec != null ? <VectorHeader key={vid} id={vid} info={vec} /> : null} */}
                     </Panel>}
                 </PanelGroup>
         </GridItem>

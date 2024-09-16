@@ -1,101 +1,142 @@
 import {
-    Modal,
-    ModalOverlay,
-    ModalContent,
-    ModalHeader,
-    ModalFooter,
-    ModalBody,
-    ModalCloseButton,
-    FormControl, FormLabel, Box, Text, Flex, Spacer, Tooltip,
-    Input, Button, useDisclosure, Select, HStack, Checkbox, Stack, Alert, AlertIcon, IconButton, useToast
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalFooter,
+  ModalBody,
+  ModalCloseButton,
+  FormControl, FormLabel, Box, Text, Flex, Spacer, Tooltip,
+  Input, Button, useDisclosure, Select, HStack, Checkbox, Stack, Alert, AlertIcon, IconButton, useToast
 } from '@chakra-ui/react'
 import React, { useState, useEffect } from 'react'
 import { AddIcon, ArrowForwardIcon, CheckIcon } from "@chakra-ui/icons"
 import { useBlast } from "../icblast"
 import { toState } from "@infu/icblast";
-import { useDispatch } from "react-redux"
-import {createNode} from "../reducers/nodes"
+import { useDispatch, useSelector } from "react-redux"
+import { createNode } from "../reducers/nodes"
 
-export function ModalOpen({ onClose }) {
+import { CreateRequest } from "./Request";
+import { Pylon, Factoryicon } from './Pylon';
+import { Routes, Route, Outlet, Link, useLocation, useParams } from 'react-router-dom';
 
-    const blast = useBlast()
-    const dispatch = useDispatch();
-    let [factories, setFactories] = useState([]);
-    const toast = useToast();
-    const toastIdRef = React.useRef()
+export function NewVector({ onClose }) {
 
-    async function load() {
-        let v = await blast.reg.get_vectors();
-        setFactories(toState(v));
-    };
-    useEffect(() => {
-        load();
-    }, []);
+  const blast = useBlast()
+  const dispatch = useDispatch();
+  const toast = useToast();
+  const toastIdRef = React.useRef();
 
 
-    async function create(factory, typeid) {
-        let custom = {
-            throttle :{
-                init : { ledger: "f54if-eqaaa-aaaaq-aacea-cai" },
-                variables : {
-                    interval_sec: {fixed: 5},
-                    max_amount: {fixed: 5000000},
-                    source_count: 2,
-                    destination_count: 2
-                }
-            }
-        };
-        console.log({
-            destinations:[],
-            refund:[],
-            controllers:[ blast.me ]
-        })
-        dispatch(createNode(factory, {
-            destinations:[],
-            refund:[],
-            controllers:[ blast.me ]
-        }, custom))
-    }
+  return <Box><Routes>
+    <Route index element={<ListFactories />} />
+    <Route path=":factory/" element={<SelectType />} />
+    <Route path=":factory/:type_id" element={<CreateForm />} />
+  </Routes>
 
-    // {"id":"throttle","name":"Throttle","description":"Send X tokens every Y seconds","supported_ledgers":[{"ic":"ryjl3-tyaaa-aaaaa-aaaba-cai"},{"ic":"f54if-eqaaa-aaaaq-aacea-cai"}],"pricing":"1 NTN","governed_by":"Neutrinite DAO"}
+    <Outlet />
+  </Box>
 
-    return <ModalContent >
-        <ModalHeader>Create vector</ModalHeader>
-        <ModalCloseButton />
-        <ModalBody pb={6}>
-            {
-                factories.map(([cid, vectors], i) => vectors.map((v, j) => <Box key={i} p={2} bg="gray.900" borderRadius="8" mb={2}>
-                    <Stack>
-                        
-                        <Box>{v.name}</Box>
-                        <Box>{v.governed_by}</Box>
-                        <Box>{v.description}</Box>
-                        <Box>{v.pricing}</Box>
-                        <Box color="gray.500">Factory: {cid}</Box>
-                        <Box><Button onClick={() => create(cid, v.id)}>Create</Button></Box>
-                    </Stack>
-                </Box>))
-
-            }
-        </ModalBody>
-    </ModalContent>
 }
 
-export function NewVector() {
+function SelectType() {
+  let factories = useSelector(s => s.nodes.factories);
 
-    const { isOpen, onOpen, onClose } = useDisclosure()
+  let { factory } = useParams();
 
-    return (
-        <>
-            <IconButton onClick={onOpen} icon={<AddIcon />} w={"50px"} h={"50px"} colorScheme={"blue"} />
+  return <Box>
+    <Box>
+      <HStack><Pylon id={factory} width="50px" /><Box>Transcendence Alpha</Box><Box>Neutrinite DAO</Box></HStack>
+    </Box>
+    <Box pt="4">
+      {
+        factories.map(([cid, vectors], i) => cid == factory ? vectors.map((v, j) => (
+          <Link to={v.id}><Box
+            key={`${i}-${j}`}
+            p={4}
+            bg="gray.900"
+            borderRadius="12"
+            mb={4}
+            boxShadow="lg"
+            cursor="pointer"
+            transition="all 0.3s ease"
+            _hover={{ transform: "scale(0.98)", boxShadow: "xl", bg: "gray.700" }}
+          >
+            <HStack spacing={4}><Box><Factoryicon id={cid + "-" + v.id} width={"50px"} /></Box>
 
-            <Modal size="xl"
-                isOpen={isOpen}
-                onClose={onClose}
-            >
-                <ModalOverlay />
-                {isOpen ? <ModalOpen onClose={onClose} /> : null}
-            </Modal>
-        </>
-    )
+              <Stack spacing={1}>
+                <Text fontSize="lg" fontWeight="bold" color="white">{v.name}</Text>
+                <Text color="gray.400">{v.description}</Text>
+                <Text fontSize="sm" color="teal.400" fontWeight="medium">{`Pricing: ${v.pricing}`}</Text>
+              </Stack>
+            </HStack>
+          </Box></Link>
+
+        )) : null)
+      }
+    </Box></Box>
+}
+
+function CreateForm() {
+  let { factory, type_id } = useParams();
+  let factories = useSelector(s => s.nodes.factories);
+
+  const blast = useBlast()
+
+  const dispatch = useDispatch();
+
+  async function onCreated() {
+
+  };
+
+  async function create(factory, typeid, data) {
+    let custom = {
+      [typeid]: data
+    };
+
+    await dispatch(createNode(factory, {
+      destinations: [],
+      refund: [],
+      controllers: [blast.me]
+    }, custom))
+
+    onCreated();
+  }
+
+  const x = factories
+    .find(([cid]) => cid === factory)?.[1]
+    .find(v => v.id === type_id);
+
+  return <Box>
+    <Box bg="gray.900" borderBottom="2px solid" borderColor="gray.700" mb={6}>
+      <Stack spacing={3} p="6">
+        <Text fontSize="2xl" fontWeight="bold" color="white">{x.name}</Text>
+        <Text fontSize="lg" color="gray.300" fontStyle="italic">{x.governed_by}</Text>
+        <Text color="gray.400">{x.description}</Text>
+        <Text fontSize="sm" color="teal.300" fontWeight="medium">{`Pricing: ${x.pricing}`}</Text>
+        <Text fontSize="sm" color="gray.500">{`Factory ID: ${factory}`}</Text>
+      </Stack>
+    </Box>
+
+    <CreateRequest onClose={() => onCreated()} key={factory + "." + type_id} factory={factory} type_id={type_id} onSubmit={(data) => create(factory, type_id, data)} /></Box>
+}
+
+function ListFactories() {
+  let factories = useSelector(s => s.nodes.factories);
+
+  return <Box pt="4">
+    <Stack spacing="2">
+      {factories.map(([cid, vectors], i) => {
+        return <Link to={cid + "/"}><Box key={cid} bg="gray.900"
+          p="4"
+          borderRadius="12"
+          mb={4}
+          boxShadow="lg"
+          cursor="pointer"
+          transition="all 0.3s ease"
+          _hover={{ transform: "scale(0.98)", boxShadow: "xl", bg: "gray.700" }}><HStack ><Pylon id={cid} width="50px" /><Box>
+            Transcendence Alpha</Box><Box>Neutrinite DAO</Box></HStack></Box></Link>
+      })}</Stack></Box>
+
+
 }

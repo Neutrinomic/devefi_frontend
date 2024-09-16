@@ -5,9 +5,9 @@ import { Box, Button, Text, HStack, VStack, MenuIcon, IconButton } from '@chakra
 import { produce } from "immer"
 import '@xyflow/react/dist/style.css';
 import { useSelector, useDispatch } from 'react-redux';
-import { canvasNodeChange, canvasOnConnect, canvasEdgeChangePromise } from "../reducers/nodes"
+import { canvasNodeChange, canvasOnConnect, canvasEdgeChangePromise, expandAccount} from "../reducers/nodes"
 import { Hashicon } from '@emeraldpay/hashicon-react';
-
+import {Nodeicon} from './Pylon';
 
 const MiniMapStyled = styled(MiniMap)`
   background-color: var(--chakra-colors-gray-800);
@@ -95,7 +95,7 @@ export function Designer({ vecs }) {
     fitView="auto"
   >
     <ControlsStyled />
-    <MiniMapStyled style={{ bottom: 70 }} />
+    <MiniMapStyled />
 
     <Background variant="dots" gap={12} size={1} color="var(--chakra-colors-gray-700)" />
   </ReactFlow>
@@ -107,17 +107,18 @@ function VectorNode({ id, data }) {
   const { input_ports, output_ports } = data;
 
   // Calculate the height of the node box based on the number of ports
-  const boxHeight = Math.max(input_ports.length, output_ports.length) * 40 + 80;
+  const boxHeight = Math.max(input_ports.length, output_ports.length) * 50 + 80;
 
   return (
     <div style={{ position: 'relative', width: '300px', height: `${boxHeight}px` }} className="vectornode">
       {/* Node label and additional line */}
+      {data.factory?<Box sx={{position:"absolute", top:"-20px", left:"130px", zIndex:100}}><Nodeicon factory={data.factory + "-" + data.node_type} id={data.node_id} width={"40px"} /></Box>:null}
       <Box className="dragh" style={{ position: 'absolute', top: 0, width: '100%' }}>
         <VStack spacing={0} p={5}>
           <Text fontSize="lg" color="white">
             {data.label}
           </Text>
-          {data.governed ? <Text fontSize="sm" color="blue.300">
+          {data.governed ? <Text fontSize="sm" color="blue.300" mt="-6px">
             {data.governed}
           </Text> : null}
         </VStack>
@@ -128,20 +129,20 @@ function VectorNode({ id, data }) {
 
 
         {input_ports.map((input, index) => (
-          <Box display="flex" alignItems="center" key={index} sx={{ position: "absolute", left: "20px", top: (index * 40) + "px" }}>
+          <Box display="flex" alignItems="center" key={index} sx={{ position: "absolute", left: "20px", top: (index * 50) + "px" }}>
             <Handle type="target" id={`input-${index}`} position={Position.Left} />
             <Box ml={4} mt={"30px"}>
               <Text fontSize="lg" fontWeight="bold">{input.type}</Text>
-              {input.desc && <Text fontSize="sm" color="gray.500">{input.desc}</Text>}
+              {input.desc && <Text fontSize="xs" color="gray.500" textTransform={"lowercase"} mt="-7px">{input.desc}</Text>}
             </Box>
           </Box>
         ))}
 
         {output_ports.map((input, index) => (
-          <Box display="flex" alignItems="center" key={index} sx={{ position: "absolute", right: "20px", top: (index * 40) + "px" }}>
+          <Box display="flex" alignItems="center" key={index} sx={{ position: "absolute", right: "20px", top: (index * 50) + "px" }}>
             <Box mr={4} textAlign="right" mt={"30px"}>
               <Text fontSize="lg" fontWeight="bold">{output_ports[index]?.type}</Text>
-              {output_ports[index]?.desc && <Text fontSize="sm" color="gray.500">{output_ports[index].desc}</Text>}
+              {output_ports[index]?.desc && <Text fontSize="xs" color="gray.500" textTransform={"lowercase"} mt="-7px">{output_ports[index].desc}</Text>}
             </Box>
             <Handle type="source" id={`output-${index}`} position={Position.Right} />
           </Box>
@@ -169,7 +170,11 @@ function VectorNode({ id, data }) {
 // }
 
 function AccountNode({ id, data }) {
-  return <div style={{ position: 'relative', width: '100px', height: `100px` }}>
+  const dispatch = useDispatch();
+
+  return <div style={{ position: 'relative', width: '100px', height: `100px` }} onClick={() => {
+    dispatch(expandAccount( id ))
+  }}>
     
     <Box sx={{position:"absolute", top:"10px", left:"7px", opacity:0}}>
     <Handle type="target" id={"input-0"} position={Position.Left} />
