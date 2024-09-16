@@ -70,9 +70,10 @@ const colorPairs = [
 ];
 
 
-export const Factoryicon = (p) => {
+export const FactoryTypeIcon = (p) => {
 
-    const rng = randomGenerator(p.id);
+    const rng = randomGenerator(p.factory);
+    const rng2 = randomGenerator(p.type_id);
 
 
     const outerColors = chroma.scale(colorPairs[rng(0, colorPairs.length)]).mode("lch").colors(6);
@@ -85,7 +86,7 @@ export const Factoryicon = (p) => {
             xmlns="http://www.w3.org/2000/svg"
         >
             {createHexagon(50, 50, outerColors, 50, 0.3, 30)}
-            {createHexagon(50, 50, chroma.scale(colorPairs[rng(0, colorPairs.length)]).mode("lch").colors(6), 30, 1)}
+            {createHexagon(50, 50, chroma.scale(colorPairs[rng2(0, colorPairs.length)]).mode("lch").colors(6), 30, 1)}
             
 
         </motion.svg>
@@ -95,6 +96,7 @@ export const Factoryicon = (p) => {
 
 export const Nodeicon = (p) => {
     const rngf = randomGenerator(p.factory+"");
+    const rngt = randomGenerator(p.type_id+"");
 
     const rng = randomGenerator(p.id+"");
 
@@ -107,9 +109,8 @@ export const Nodeicon = (p) => {
             xmlns="http://www.w3.org/2000/svg"
         >
             {createHexagon(50, 50, chroma.scale(colorPairs[rngf(0, colorPairs.length)]).mode("lch").colors(6), 50, 0.3, 30)}
-            {/* {createHexagon(25, 25, innerColors, 25, 1)}
-            {createHexagon(0, 15, innerColors, 25, 1)} */}
-            {createHexagon(50, 50, chroma.scale(colorPairs[rngf(0, colorPairs.length)]).mode("lch").colors(6), 40, 0.3)}
+   
+            {createHexagon(50, 50, chroma.scale(colorPairs[rngt(0, colorPairs.length)]).mode("lch").colors(6), 40, 0.3)}
             {createHexagon(50, 50, chroma.scale(colorPairs[rng(0, colorPairs.length)]).mode("lch").colors(6), 30, 1, 30)}
             
 

@@ -112,7 +112,7 @@ function VectorNode({ id, data }) {
   return (
     <div style={{ position: 'relative', width: '300px', height: `${boxHeight}px` }} className="vectornode">
       {/* Node label and additional line */}
-      {data.factory?<Box sx={{position:"absolute", top:"-20px", left:"130px", zIndex:100}}><Nodeicon factory={data.factory + "-" + data.node_type} id={data.node_id} width={"40px"} /></Box>:null}
+      {data.factory?<Box sx={{position:"absolute", top:"-20px", left:"130px", zIndex:100}}><Nodeicon factory={data.factory} type_id={data.node_type} id={data.node_id} width={"40px"} /></Box>:null}
       <Box className="dragh" style={{ position: 'absolute', top: 0, width: '100%' }}>
         <VStack spacing={0} p={5}>
           <Text fontSize="lg" color="white">

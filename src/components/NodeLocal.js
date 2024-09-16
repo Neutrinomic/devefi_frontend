@@ -32,7 +32,7 @@ export function NodeLocal({ onClose }) {
     Object.keys(my_node_factories).forEach(factory_id => {
         
         let my_nodes = my_node_factories[factory_id];
-        let f_meta_types = factories.find(f => f[0] === factory_id)[1];
+        let f_meta_types = factories.find(f => f[0] === factory_id)[1].nodes;
         
 
         my_nodes.forEach(node => {

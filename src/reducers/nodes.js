@@ -215,7 +215,7 @@ const refreshCanvasNodesInternal = (state) => {
     if (node.type === "account") continue;
     let xnode = state.my[node.data.factory].find(n => n.id === node.data.node_id);
     let node_type = Object.keys(xnode.custom)[0];
-    let node_meta = state.factories.find(f => f[0] === factory)[1].find(n => n.id === node_type);
+    let node_meta = state.factories.find(f => f[0] === factory)[1].nodes.find(n => n.id === node_type);
     node.data.label = node_meta.name;
     node.data.governed = node_meta.governed_by;
     node.data.node_type = node_type;
@@ -298,7 +298,7 @@ export const nodeSlice = createSlice({
 
       let node = state.my[factory].find(n => n.id === id);
       let node_type = Object.keys(node.custom)[0];
-      let node_meta = state.factories.find(f => f[0] === factory)[1].find(n => n.id === node_type);
+      let node_meta = state.factories.find(f => f[0] === factory)[1].nodes.find(n => n.id === node_type);
 
       // Check if already on canvas
       if (state.canvas[state.current_canvas_id].nodes.find(n => n.id === factory + "-" + node.id)) {

@@ -122,7 +122,7 @@ export function SupportedLedgers() {
 
     if (!factory || !type_id) return null;
     const supported_ledgers = factories
-        .find(([cid]) => cid === factory)?.[1]
+        .find(([cid]) => cid === factory)?.[1].nodes
         .find(v => v.id === type_id).supported_ledgers;
 
 

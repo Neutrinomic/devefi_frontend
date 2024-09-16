@@ -17,8 +17,8 @@ import { useDispatch, useSelector } from "react-redux"
 import { createNode } from "../reducers/nodes"
 
 import { CreateRequest } from "./Request";
-import { Pylon, Factoryicon } from './Pylon';
-import { Routes, Route, Outlet, Link, useLocation, useParams } from 'react-router-dom';
+import { Pylon, FactoryTypeIcon } from './Pylon';
+import { Routes, Route, Outlet, Link, useLocation, useParams, useNavigate } from 'react-router-dom';
 
 export function NewVector({ onClose }) {
 
@@ -39,19 +39,19 @@ export function NewVector({ onClose }) {
 
 }
 
+
+
 function SelectType() {
   let factories = useSelector(s => s.nodes.factories);
 
   let { factory } = useParams();
 
   return <Box>
-    <Box>
-      <HStack><Pylon id={factory} width="50px" /><Box>Transcendence Alpha</Box><Box>Neutrinite DAO</Box></HStack>
-    </Box>
+    <OverviewFactory factory={factory} />
     <Box pt="4">
       {
-        factories.map(([cid, vectors], i) => cid == factory ? vectors.map((v, j) => (
-          <Link to={v.id}><Box
+        factories.map(([cid, meta], i) => cid == factory ? meta.nodes.map((v, j) => (
+          <Link to={v.id} key={v.id}><Box
             key={`${i}-${j}`}
             p={4}
             bg="gray.900"
@@ -62,7 +62,7 @@ function SelectType() {
             transition="all 0.3s ease"
             _hover={{ transform: "scale(0.98)", boxShadow: "xl", bg: "gray.700" }}
           >
-            <HStack spacing={4}><Box><Factoryicon id={cid + "-" + v.id} width={"50px"} /></Box>
+            <HStack spacing={4}><Box><FactoryTypeIcon factory={cid} type_id={v.id} width={"50px"} /></Box>
 
               <Stack spacing={1}>
                 <Text fontSize="lg" fontWeight="bold" color="white">{v.name}</Text>
@@ -77,16 +77,42 @@ function SelectType() {
     </Box></Box>
 }
 
+function OverviewFactory({ factory }) {
+  let factories = useSelector(s => s.nodes.factories);
+  let x = factories.find(([cid]) => cid === factory)?.[1];
+  return <Link to="../"><Box bg="gray.900" borderRadius="5" borderColor="gray.700" mb={3} p="2">
+    <HStack><Box pl="3" pr="3" pt="2" pb="2"><Pylon id={factory} width="50px" /></Box><Box fontWeight="bold">{x.name}</Box><Box color="gray.500">{x.governed_by}</Box></HStack>
+  </Box></Link>
+}
+
+function OverviewFactoryType({ factory, type_id }) {
+  let factories = useSelector(s => s.nodes.factories);
+
+  const x = factories
+    .find(([cid]) => cid === factory)?.[1].nodes
+    .find(v => v.id === type_id);
+  return <Link to={"../"+factory}><Box bg="gray.900" borderRadius="5" borderColor="gray.700" mb={3}>
+  <HStack><Box pl="5" pr="2"><FactoryTypeIcon factory={factory} type_id={type_id}  width="50px"/></Box>
+    <Stack spacing={3} p="2">
+      <Text fontSize="2xl" fontWeight="bold" color="white">{x.name}</Text>
+      <Text color="gray.400">{x.description}</Text>
+      <Text fontSize="sm" color="teal.300" fontWeight="medium">{`Pricing: ${x.pricing}`}</Text>
+    </Stack>
+    </HStack>
+  </Box></Link>
+
+}
+
 function CreateForm() {
   let { factory, type_id } = useParams();
   let factories = useSelector(s => s.nodes.factories);
-
+  const navigate = useNavigate();
   const blast = useBlast()
 
   const dispatch = useDispatch();
 
-  async function onCreated() {
-
+  async function onClose() {
+    navigate("../");
   };
 
   async function create(factory, typeid, data) {
@@ -100,25 +126,15 @@ function CreateForm() {
       controllers: [blast.me]
     }, custom))
 
-    onCreated();
+    onClose();
   }
 
-  const x = factories
-    .find(([cid]) => cid === factory)?.[1]
-    .find(v => v.id === type_id);
 
   return <Box>
-    <Box bg="gray.900" borderBottom="2px solid" borderColor="gray.700" mb={6}>
-      <Stack spacing={3} p="6">
-        <Text fontSize="2xl" fontWeight="bold" color="white">{x.name}</Text>
-        <Text fontSize="lg" color="gray.300" fontStyle="italic">{x.governed_by}</Text>
-        <Text color="gray.400">{x.description}</Text>
-        <Text fontSize="sm" color="teal.300" fontWeight="medium">{`Pricing: ${x.pricing}`}</Text>
-        <Text fontSize="sm" color="gray.500">{`Factory ID: ${factory}`}</Text>
-      </Stack>
-    </Box>
+    <OverviewFactory factory={factory} />
+    <OverviewFactoryType factory={factory} type_id={type_id} />
 
-    <CreateRequest onClose={() => onCreated()} key={factory + "." + type_id} factory={factory} type_id={type_id} onSubmit={(data) => create(factory, type_id, data)} /></Box>
+    <CreateRequest onClose={() => onClose()} key={factory + "." + type_id} factory={factory} type_id={type_id} onSubmit={(data) => create(factory, type_id, data)} /></Box>
 }
 
 function ListFactories() {
@@ -126,16 +142,16 @@ function ListFactories() {
 
   return <Box pt="4">
     <Stack spacing="2">
-      {factories.map(([cid, vectors], i) => {
-        return <Link to={cid + "/"}><Box key={cid} bg="gray.900"
+      {factories.map(([cid, meta], i) => {
+        return <Link to={cid + "/"} key={cid}><Box bg="gray.900"
           p="4"
           borderRadius="12"
           mb={4}
           boxShadow="lg"
           cursor="pointer"
           transition="all 0.3s ease"
-          _hover={{ transform: "scale(0.98)", boxShadow: "xl", bg: "gray.700" }}><HStack ><Pylon id={cid} width="50px" /><Box>
-            Transcendence Alpha</Box><Box>Neutrinite DAO</Box></HStack></Box></Link>
+          _hover={{ transform: "scale(0.98)", boxShadow: "xl", bg: "gray.700" }}><HStack ><Pylon id={cid} width="50px" /><Box fontWeight="bold">
+            {meta.name}</Box><Box>{meta.nodes.length} types</Box><Box color="gray.500">{meta.governed_by}</Box></HStack></Box></Link>
       })}</Stack></Box>
 
 
