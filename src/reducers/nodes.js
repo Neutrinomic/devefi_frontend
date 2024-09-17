@@ -108,7 +108,7 @@ const refreshEdgesInternal = (state) => {
                 width: 30,
                 height: 30
               },
-              style: { stroke:  external?'orange':'white' } // Change the edge color here
+              style: { stroke:  external?'orange':'' } // Change the edge color here
 
             };
 
@@ -145,7 +145,7 @@ const refreshEdgesInternal = (state) => {
                 width: 30,
                 height: 30
               },
-              style: { stroke: external?'orange':'white' } // Change the edge color here
+              style: { stroke: external?'orange':'' } // Change the edge color here
 
             };
 
