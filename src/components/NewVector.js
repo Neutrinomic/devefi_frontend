@@ -91,13 +91,13 @@ function OverviewFactoryType({ factory, type_id }) {
   const x = factories
     .find(([cid]) => cid === factory)?.[1].nodes
     .find(v => v.id === type_id);
-  return <Link to={"../"+factory}><Box bg="gray.900" borderRadius="5" borderColor="gray.700" mb={3}>
-  <HStack><Box pl="5" pr="2"><FactoryTypeIcon factory={factory} type_id={type_id}  width="50px"/></Box>
-    <Stack spacing={3} p="2">
-      <Text fontSize="2xl" fontWeight="bold" color="white">{x.name}</Text>
-      <Text color="gray.400">{x.description}</Text>
-      <Text fontSize="sm" color="teal.300" fontWeight="medium">{`Pricing: ${x.pricing}`}</Text>
-    </Stack>
+  return <Link to={"../" + factory}><Box bg="gray.900" borderRadius="5" borderColor="gray.700" mb={3}>
+    <HStack><Box pl="5" pr="2"><FactoryTypeIcon factory={factory} type_id={type_id} width="50px" /></Box>
+      <Stack spacing={3} p="2">
+        <Text fontSize="2xl" fontWeight="bold" color="white">{x.name}</Text>
+        <Text color="gray.400">{x.description}</Text>
+        <Text fontSize="sm" color="teal.300" fontWeight="medium">{`Pricing: ${x.pricing}`}</Text>
+      </Stack>
     </HStack>
   </Box></Link>
 

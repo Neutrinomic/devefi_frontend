@@ -122,15 +122,15 @@ const refreshEdgesInternal = (state) => {
 
         for (let destination of xnode_to.sources) {
 
-          let destination_platform = Object.keys(destination)[0];
-          let destination_principal = destination[destination_platform].ledger;
-          let destination_account = destination[destination_platform].account ? encodeAccount(destination[destination_platform].account) : null;
+          let destination_platform = Object.keys(destination.endpoint)[0];
+          let destination_principal = destination.endpoint[destination_platform].ledger;
+          let destination_account = destination.endpoint[destination_platform].account ? encodeAccount(destination.endpoint[destination_platform].account) : null;
 
           if (source_account === destination_account) {
 
             unused_targets = unused_targets.filter(x => x[0] !== destination_account);
             used_targets.push(destination_account);
-            const external = destination[destination_platform].account.owner != node.data.factory;
+            const external = destination.endpoint[destination_platform].account.owner != node.data.factory;
 
             let edge = {
               type: "smoothstep",
@@ -220,10 +220,10 @@ const refreshCanvasNodesInternal = (state) => {
     node.data.governed = node_meta.governed_by;
     node.data.node_type = node_type;
     node.data.input_ports = xnode.sources.map(x => {
-      let platform = Object.keys(x)[0];
-      let principal = x[platform].ledger;
-      let account = x[platform].account;
-      let desc = x[platform].name;
+      let platform = Object.keys(x.endpoint)[0];
+      let principal = x.endpoint[platform].ledger;
+      let account = x.endpoint[platform].account;
+      let desc = x.endpoint[platform].name;
       return ({ type: state.ledgers[platform]?.[principal]?.symbol || "...", desc })
     });
     node.data.output_ports = xnode.destinations.map(x => {
@@ -316,10 +316,10 @@ export const nodeSlice = createSlice({
           governed: node_meta.governed_by,
           node_type: node_type,
           input_ports: node.sources.map(x => {
-            let platform = Object.keys(x)[0];
-            let principal = x[platform].ledger;
-            let account = x[platform].account;
-            let desc = x[platform].name;
+            let platform = Object.keys(x.endpoint)[0];
+            let principal = x.endpoint[platform].ledger;
+            let account = x.endpoint[platform].account;
+            let desc = x.endpoint[platform].name;
             return ({ type: state.ledgers[platform]?.[principal]?.symbol || "...", desc })
           }),
           output_ports: node.destinations.map(x => {
@@ -410,9 +410,9 @@ export const expandAccount = (account_text) => async (dispatch, getState) => {
   for (let factory of Object.keys(state.nodes.my)) {
     for (let node of state.nodes.my[factory]) {
       for (let source of node.sources) {
-        let platform = Object.keys(source)[0];
-        let principal = source[platform].ledger;
-        let account = source[platform].account ? encodeAccount(source[platform].account) : null;
+        let platform = Object.keys(source.endpoint)[0];
+        let principal = source.endpoint[platform].ledger;
+        let account = source.endpoint[platform].account ? encodeAccount(source.endpoint[platform].account) : null;
         
         if (account === account_text) {
           dispatch(addNodeToCanvas({ factory: factory, id: node.id }));
@@ -493,7 +493,7 @@ export const canvasOnConnect = (params) => async (dispatch, getState) => {
     
 
     let destinations = produce(source_node.destinations, draft => {
-      draft[source_port_id].ic.account = destination_node.sources[target_port_id].ic.account;
+      draft[source_port_id].ic.account = destination_node.sources[target_port_id].endpoint.ic.account;
     });
 
     
